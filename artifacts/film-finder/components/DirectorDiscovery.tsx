@@ -50,12 +50,17 @@ export function DirectorDiscovery() {
           .slice(0, 200)
           .map((movie) => movie.id)
           .join(",") || undefined,
+      followedDirectorIds:
+        preferences.followedDirectors
+          .map((director) => director.id)
+          .join(",") || undefined,
       excludeMovieIds:
         preferences.dismissedMovieIds.slice(-200).join(",") || undefined,
     }),
     [
       rotation,
       preferences.dismissedMovieIds,
+      preferences.followedDirectors,
       preferences.selectedProviders,
       preferences.watchedMovies,
     ],
