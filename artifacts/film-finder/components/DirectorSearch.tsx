@@ -69,7 +69,7 @@ export function DirectorSearch() {
 
   const openDirector = (director: DirectorSearchResult) => {
     router.push({
-      pathname: "/directory/[id]",
+      pathname: "/director/[id]",
       params: {
         id: String(director.id),
         name: director.name,
