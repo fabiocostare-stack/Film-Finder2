@@ -281,7 +281,12 @@ const genreTerms: Record<number, string[]> = {
   10752: ["guerra", "bellico", "war"],
 };
 
-function inferGenres(taste?: string): number[] {
+/**
+ * Maps a free-text taste description to TMDB genre ids using Italian/English
+ * synonyms. Exported so the app can rank its own lists with the same vocabulary
+ * the recommendation endpoints use.
+ */
+export function inferGenres(taste?: string): number[] {
   if (!taste) return [];
   const normalized = taste.toLocaleLowerCase("it-IT");
   return Object.entries(genreTerms)
