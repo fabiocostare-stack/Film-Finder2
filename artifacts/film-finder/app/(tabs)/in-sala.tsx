@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -11,6 +11,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import {
   getListMoviesInTheatersQueryKey,
+  inferGenres,
   useListMoviesInTheaters,
   type ListMoviesInTheatersParams,
   type Movie,
@@ -25,14 +26,14 @@ import { ProfileShortcut } from "@/components/ProfileShortcut";
 import { usePreferences } from "@/context/PreferencesContext";
 import { useMovieCredits } from "@/hooks/useMovieCredits";
 import { useColors } from "@/hooks/useColors";
+import {
+  buildTasteProfile,
+  hasTasteSignals,
+  rankMoviesByTasteAndRating,
+} from "@/lib/movieScore";
 
 const REGION = "IT";
 const STALE_TIME = 30 * 60 * 1000;
-const MUST_SEE_MIN_RATING = 6.5;
-const MUST_SEE_MIN_VOTES = 30;
-const MUST_SEE_LIMIT = 4;
-const IN_CINEMAS_LIMIT = 12;
-const UPCOMING_LIMIT = 10;
 const MONTHS = [
   "gen",
   "feb",
@@ -48,6 +49,17 @@ const MONTHS = [
   "dic",
 ];
 
+type ListMode = "now" | "upcoming";
+
+const LIST_MODES: Array<{
+  mode: ListMode;
+  label: string;
+  icon: "film" | "calendar";
+}> = [
+  { mode: "now", label: "Al cinema ora", icon: "film" },
+  { mode: "upcoming", label: "Prossimamente", icon: "calendar" },
+];
+
 function formatReleaseLabel(value: string): string | null {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   if (!match) return null;
@@ -61,6 +73,7 @@ export default function InTheatersScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { preferences, toggleWatchedMovie, toggleSavedMovie } = usePreferences();
+  const [listMode, setListMode] = useState<ListMode>("now");
 
   const params: ListMoviesInTheatersParams = { region: REGION };
   const catalog = useListMoviesInTheaters(params, {
@@ -72,43 +85,27 @@ export default function InTheatersScreen() {
     },
   });
 
-  const nowPlaying = catalog.data?.nowPlaying ?? [];
-  const upcoming = catalog.data?.upcoming ?? [];
-
-  const mustSee = useMemo(() => {
-    const ranked = [...nowPlaying].sort(
-      (a, b) => b.voteAverage - a.voteAverage,
-    );
-    const strong = ranked.filter(
-      (movie) =>
-        movie.voteAverage >= MUST_SEE_MIN_RATING &&
-        (movie.voteCount ?? 0) >= MUST_SEE_MIN_VOTES,
-    );
-    return (strong.length > 0 ? strong : ranked).slice(0, MUST_SEE_LIMIT);
-  }, [nowPlaying]);
-
-  const mustSeeIds = useMemo(
-    () => new Set(mustSee.map((movie) => movie.id)),
-    [mustSee],
+  const tasteGenreIds = useMemo(
+    () => inferGenres(preferences.taste),
+    [preferences.taste],
   );
-  const inCinemas = useMemo(
-    () =>
-      nowPlaying
-        .filter((movie) => !mustSeeIds.has(movie.id))
-        .slice(0, IN_CINEMAS_LIMIT),
-    [mustSeeIds, nowPlaying],
+  const profile = useMemo(
+    () => buildTasteProfile(preferences.watchedMovies, tasteGenreIds),
+    [preferences.watchedMovies, tasteGenreIds],
   );
-  const nextReleases = useMemo(
-    () => upcoming.slice(0, UPCOMING_LIMIT),
-    [upcoming],
+  const personalised = hasTasteSignals(profile);
+
+  const nowPlaying = useMemo(
+    () => rankMoviesByTasteAndRating(catalog.data?.nowPlaying ?? [], profile),
+    [catalog.data?.nowPlaying, profile],
+  );
+  const upcoming = useMemo(
+    () => rankMoviesByTasteAndRating(catalog.data?.upcoming ?? [], profile),
+    [catalog.data?.upcoming, profile],
   );
 
-  const visibleIds = useMemo(
-    () =>
-      [...mustSee, ...inCinemas, ...nextReleases].map((movie) => movie.id),
-    [inCinemas, mustSee, nextReleases],
-  );
-  const movieCredits = useMovieCredits(visibleIds);
+  const visibleMovies = listMode === "now" ? nowPlaying : upcoming;
+  const movieCredits = useMovieCredits(visibleMovies.map((movie) => movie.id));
   const watchedIds = useMemo(
     () => new Set(preferences.watchedMovies.map((movie) => movie.id)),
     [preferences.watchedMovies],
@@ -118,7 +115,7 @@ export default function InTheatersScreen() {
     [preferences.savedMovies],
   );
 
-  const renderCard = (movie: Movie) => (
+  const renderMovie = (movie: Movie) => (
     <FilmCard
       key={movie.id}
       movie={movie}
@@ -131,11 +128,16 @@ export default function InTheatersScreen() {
       isSaved={savedIds.has(movie.id)}
       onToggleWatched={toggleWatchedMovie}
       onToggleSave={toggleSavedMovie}
-      releaseLabel={formatReleaseLabel(movie.releaseDate)}
+      releaseLabel={
+        listMode === "upcoming" ? formatReleaseLabel(movie.releaseDate) : null
+      }
     />
   );
 
-  const isEmpty = !catalog.isLoading && nowPlaying.length === 0 && upcoming.length === 0;
+  const emptyMessage =
+    listMode === "now"
+      ? "Nessun film in programmazione nelle sale italiane in questo momento."
+      : "Nessuna uscita annunciata per le sale italiane al momento.";
 
   return (
     <ScrollView
@@ -161,8 +163,8 @@ export default function InTheatersScreen() {
         <ProfileShortcut />
       </View>
       <Text style={[styles.description, { color: colors.mutedForeground }]}>
-        Cosa c'è in programmazione nelle sale italiane e cosa sta per uscire.
-        Aggiungi alla lista quello che ti interessa.
+        Le sale italiane, ordinate in base ai tuoi gusti e al voto che stanno
+        raggiungendo.
       </Text>
 
       <View style={styles.controls}>
@@ -194,6 +196,86 @@ export default function InTheatersScreen() {
         </Pressable>
       </View>
 
+      <View
+        style={[
+          styles.segment,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
+        {LIST_MODES.map(({ mode, label, icon }) => {
+          const selected = listMode === mode;
+          const count = mode === "now" ? nowPlaying.length : upcoming.length;
+          return (
+            <Pressable
+              key={mode}
+              testID={`in-theaters-filter-${mode}`}
+              accessibilityRole="button"
+              accessibilityState={{ selected }}
+              onPress={() => setListMode(mode)}
+              style={({ pressed }) => [
+                styles.segmentButton,
+                selected ? { backgroundColor: colors.primary } : null,
+                { opacity: pressed ? 0.75 : 1 },
+              ]}
+            >
+              <Feather
+                name={icon}
+                size={14}
+                color={
+                  selected ? colors.primaryForeground : colors.mutedForeground
+                }
+              />
+              <Text
+                style={[
+                  styles.segmentText,
+                  {
+                    color: selected
+                      ? colors.primaryForeground
+                      : colors.mutedForeground,
+                  },
+                ]}
+              >
+                {label}
+              </Text>
+              {count > 0 ? (
+                <View
+                  style={[
+                    styles.segmentCount,
+                    {
+                      backgroundColor: selected
+                        ? colors.primaryForeground
+                        : colors.secondary,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.segmentCountText,
+                      { color: selected ? colors.primary : colors.foreground },
+                    ]}
+                  >
+                    {count}
+                  </Text>
+                </View>
+              ) : null}
+            </Pressable>
+          );
+        })}
+      </View>
+
+      <View style={styles.orderNote}>
+        <Feather
+          name={personalised ? "user-check" : "star"}
+          size={12}
+          color={colors.primary}
+        />
+        <Text style={[styles.orderText, { color: colors.mutedForeground }]}>
+          {personalised
+            ? "Ordinati per vicinanza ai tuoi gusti e voto complessivo."
+            : "Ordinati per voto complessivo. Segna i film visti o descrivi i tuoi gusti nel profilo per un ordine più personale."}
+        </Text>
+      </View>
+
       {catalog.isLoading ? (
         <View style={[styles.statusPanel, { borderColor: colors.border }]}>
           <ActivityIndicator color={colors.primary} />
@@ -210,86 +292,23 @@ export default function InTheatersScreen() {
           )}
           onRetry={() => void catalog.refetch()}
         />
-      ) : isEmpty ? (
+      ) : visibleMovies.length === 0 ? (
         <View style={[styles.statusPanel, { borderColor: colors.border }]}>
           <Feather name="film" size={22} color={colors.primary} />
           <Text style={[styles.statusText, { color: colors.mutedForeground }]}>
-            Nessun film in programmazione trovato per le sale italiane in questo
-            momento.
+            {emptyMessage}
           </Text>
         </View>
       ) : (
-        <>
-          {mustSee.length > 0 ? (
-            <View style={styles.section}>
-              <SectionTitle
-                icon="award"
-                title="Da non perdere"
-                subtitle="I più apprezzati tra quelli in sala"
-              />
-              <View style={styles.list}>{mustSee.map(renderCard)}</View>
-            </View>
-          ) : null}
-
-          {inCinemas.length > 0 ? (
-            <View style={styles.section}>
-              <SectionTitle
-                icon="film"
-                title="Al cinema ora"
-                subtitle="In programmazione nelle sale italiane"
-              />
-              <View style={styles.list}>{inCinemas.map(renderCard)}</View>
-            </View>
-          ) : null}
-
-          {nextReleases.length > 0 ? (
-            <View style={styles.section}>
-              <SectionTitle
-                icon="calendar"
-                title="Prossimamente"
-                subtitle="Le prossime uscite, dalla più vicina"
-              />
-              <View style={styles.list}>{nextReleases.map(renderCard)}</View>
-            </View>
-          ) : null}
-        </>
+        <View style={styles.list}>{visibleMovies.map(renderMovie)}</View>
       )}
     </ScrollView>
   );
 }
 
-function SectionTitle({
-  icon,
-  title,
-  subtitle,
-}: {
-  icon: "award" | "film" | "calendar";
-  title: string;
-  subtitle: string;
-}) {
-  const colors = useColors();
-  return (
-    <View style={styles.sectionHeading}>
-      <View style={[styles.sectionIcon, { backgroundColor: colors.accent }]}>
-        <Feather name={icon} size={14} color={colors.primary} />
-      </View>
-      <View style={styles.sectionCopy}>
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-          {title}
-        </Text>
-        <Text
-          style={[styles.sectionSubtitle, { color: colors.mutedForeground }]}
-        >
-          {subtitle}
-        </Text>
-      </View>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  content: { paddingHorizontal: 20, gap: 16 },
+  content: { paddingHorizontal: 20, gap: 14 },
   topRow: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -322,7 +341,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
   },
-  regionText: { fontSize: 10, letterSpacing: 1.4, fontFamily: "Inter_600SemiBold" },
+  regionText: {
+    fontSize: 10,
+    letterSpacing: 1.4,
+    fontFamily: "Inter_600SemiBold",
+  },
   refreshButton: {
     width: 38,
     height: 38,
@@ -331,18 +354,40 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  section: { gap: 11 },
-  sectionHeading: { flexDirection: "row", alignItems: "center", gap: 10 },
-  sectionIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: 10,
+  segment: {
+    flexDirection: "row",
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 4,
+    gap: 4,
+  },
+  segmentButton: {
+    flex: 1,
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    borderRadius: 12,
+    paddingHorizontal: 6,
+  },
+  segmentText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
+  segmentCount: {
+    minWidth: 20,
+    height: 18,
+    paddingHorizontal: 5,
+    borderRadius: 7,
     alignItems: "center",
     justifyContent: "center",
   },
-  sectionCopy: { flex: 1, gap: 2 },
-  sectionTitle: { fontSize: 17, fontFamily: "Inter_700Bold", letterSpacing: -0.3 },
-  sectionSubtitle: { fontSize: 11, lineHeight: 16 },
+  segmentCountText: { fontSize: 10, fontFamily: "Inter_700Bold" },
+  orderNote: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    paddingHorizontal: 2,
+  },
+  orderText: { flex: 1, fontSize: 11, lineHeight: 16 },
   list: { gap: 12 },
   statusPanel: {
     borderWidth: 1,
