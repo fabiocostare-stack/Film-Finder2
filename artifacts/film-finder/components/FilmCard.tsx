@@ -72,6 +72,12 @@ export function FilmCard({
     ? `https://image.tmdb.org/t/p/w342${movie.posterPath}`
     : null;
   const runtimeLabel = formatRuntime(credits?.runtime);
+  // Always offer a way out of the availability panel: TMDB's watch page when the
+  // region has one, otherwise the movie page. This keeps "Dettagli" reachable
+  // even for films with no flatrate/free option in Italy.
+  const detailsUrl =
+    availability.data?.link ??
+    `https://www.themoviedb.org/movie/${movie.id}?language=it-IT`;
 
   return (
     <View
@@ -275,11 +281,28 @@ export function FilmCard({
 
       {showAvailability ? (
         <View style={[styles.availability, { borderTopColor: colors.border }]}>
-          <Text
-            style={[styles.availabilityTitle, { color: colors.foreground }]}
-          >
-            In streaming in Italia
-          </Text>
+          <View style={styles.availabilityHeader}>
+            <Text
+              style={[styles.availabilityTitle, { color: colors.foreground }]}
+            >
+              In streaming in Italia
+            </Text>
+            <Pressable
+              testID={`availability-details-${movie.id}`}
+              accessibilityRole="link"
+              accessibilityLabel={`Apri i dettagli di ${movie.title}`}
+              onPress={() => void Linking.openURL(detailsUrl)}
+              style={({ pressed }) => [
+                styles.tmdbLink,
+                { opacity: pressed ? 0.65 : 1 },
+              ]}
+            >
+              <Text style={[styles.tmdbLinkText, { color: colors.primary }]}>
+                Dettagli
+              </Text>
+              <Feather name="external-link" size={12} color={colors.primary} />
+            </Pressable>
+          </View>
           {availability.isLoading ? (
             <ActivityIndicator size="small" color={colors.primary} />
           ) : availability.isError ? (
@@ -304,29 +327,6 @@ export function FilmCard({
                   {provider.name}
                 </Text>
               ))}
-              {availability.data.link ? (
-                <Pressable
-                  accessibilityRole="link"
-                  onPress={() =>
-                    void Linking.openURL(availability.data?.link ?? "")
-                  }
-                  style={({ pressed }) => [
-                    styles.tmdbLink,
-                    { opacity: pressed ? 0.65 : 1 },
-                  ]}
-                >
-                  <Text
-                    style={[styles.tmdbLinkText, { color: colors.primary }]}
-                  >
-                    Dettagli
-                  </Text>
-                  <Feather
-                    name="external-link"
-                    size={12}
-                    color={colors.primary}
-                  />
-                </Pressable>
-              ) : null}
             </View>
           ) : (
             <Text
@@ -335,7 +335,8 @@ export function FilmCard({
                 { color: colors.mutedForeground },
               ]}
             >
-              Non risultano piattaforme streaming per questo film in Italia.
+              Nessuna piattaforma in abbonamento o gratuita in Italia. Apri
+              "Dettagli" per noleggio, acquisto e sale.
             </Text>
           )}
         </View>
@@ -446,6 +447,12 @@ const styles = StyleSheet.create({
     gap: 9,
   },
   availabilityTitle: { fontSize: 11, fontFamily: "Inter_600SemiBold" },
+  availabilityHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
   availabilityText: { fontSize: 10, lineHeight: 15 },
   providerList: {
     flexDirection: "row",
