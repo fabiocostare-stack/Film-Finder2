@@ -1,3 +1,4 @@
 - [Orval path-parameter export collision](orval-path-parameter-collision.md) — GET path-parameter schemas can collide with generated TypeScript parameter types.
+- [Director search contract](director-search-contract.md) — Autocomplete endpoint filters TMDB people to `Directing` and must be implemented in both request paths.
 - [TMDB streaming-region filter](tmdb-provider-region-filter.md) — `with_watch_providers` needs `watch_region`; `region` alone does not constrain streaming availability.
 - [Film recommendation priorities](film-recommendation-priorities.md) — Choose streaming services first; only suggest available films, favoring watched-title similarity and strong ratings.

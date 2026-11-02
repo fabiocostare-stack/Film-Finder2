@@ -78,6 +78,18 @@ export interface DirectorDiscoveriesResponse {
     personalized: DirectorRecommendation[];
     discover: DirectorRecommendation[];
 }
+export interface DirectorSearchResult {
+    id: number;
+    name: string;
+    /** @nullable */
+    profilePath: string | null;
+    /** Up to three titles the director is best known for. */
+    knownFor: string[];
+}
+export interface DirectorSearchResponse {
+    results: DirectorSearchResult[];
+    totalResults: number;
+}
 export interface MovieErrorResponse {
     error: string;
     code: string;
@@ -168,6 +180,19 @@ export type GetMovieCreditsBatchParams = {
      * @maxLength 200
      */
     movieIds: string;
+};
+export type SearchDirectorsParams = {
+    /**
+     * @minLength 2
+     * @maxLength 80
+     */
+    query: string;
+    /**
+     * Maximum number of director suggestions to return.
+     * @minimum 1
+     * @maximum 20
+     */
+    limit?: number;
 };
 export type GetDirectorDiscoveriesParams = {
     /**

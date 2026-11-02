@@ -199,6 +199,34 @@ export const GetMovieCreditsBatchResponse = zod.object({
 
 
 /**
+ * Returns directors matching the query, best matches first, with the titles they are best known for.
+ * @summary Search directors by name
+ */
+export const searchDirectorsQueryQueryMin = 2;
+export const searchDirectorsQueryQueryMax = 80;
+
+export const searchDirectorsQueryLimitDefault = 8;
+export const searchDirectorsQueryLimitMax = 20;
+
+
+
+export const SearchDirectorsQueryParams = zod.object({
+  "query": zod.coerce.string().min(searchDirectorsQueryQueryMin).max(searchDirectorsQueryQueryMax),
+  "limit": zod.coerce.number().int().min(1).max(searchDirectorsQueryLimitMax).default(searchDirectorsQueryLimitDefault).describe('Maximum number of director suggestions to return.')
+})
+
+export const SearchDirectorsResponse = zod.object({
+  "results": zod.array(zod.object({
+  "id": zod.number().int(),
+  "name": zod.string(),
+  "profilePath": zod.string().nullable(),
+  "knownFor": zod.array(zod.string()).describe('Up to three titles the director is best known for.')
+})),
+  "totalResults": zod.number().int()
+})
+
+
+/**
  * @summary Recommend directors and highly rated films available on selected services
  */
 export const getDirectorDiscoveriesQueryRegionDefault = `IT`;

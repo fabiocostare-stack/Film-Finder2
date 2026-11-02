@@ -1,5 +1,5 @@
 import type { QueryKey, UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
-import type { DirectorDiscoveriesResponse, GetDirectorDiscoveriesParams, GetMovieAvailabilityParams, GetMovieCreditsBatchParams, GetMovieCreditsParams, GetMovieRecommendationsParams, HealthStatus, ListMovieProvidersParams, MovieAvailabilityResponse, MovieCreditsBatchResponse, MovieCreditsResponse, MovieErrorResponse, MovieProviderListResponse, MovieSearchResponse, SearchMoviesParams } from './api.schemas';
+import type { DirectorDiscoveriesResponse, DirectorSearchResponse, GetDirectorDiscoveriesParams, GetMovieAvailabilityParams, GetMovieCreditsBatchParams, GetMovieCreditsParams, GetMovieRecommendationsParams, HealthStatus, ListMovieProvidersParams, MovieAvailabilityResponse, MovieCreditsBatchResponse, MovieCreditsResponse, MovieErrorResponse, MovieProviderListResponse, MovieSearchResponse, SearchDirectorsParams, SearchMoviesParams } from './api.schemas';
 import { customFetch } from '../custom-fetch';
 import type { ErrorType } from '../custom-fetch';
 type AwaitedInput<T> = PromiseLike<T> | T;
@@ -163,6 +163,30 @@ export type GetMovieCreditsBatchQueryError = ErrorType<MovieErrorResponse>;
  */
 export declare function useGetMovieCreditsBatch<TData = Awaited<ReturnType<typeof getMovieCreditsBatch>>, TError = ErrorType<MovieErrorResponse>>(params: GetMovieCreditsBatchParams, options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getMovieCreditsBatch>>, TError, TData>;
+    request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+};
+export declare const getSearchDirectorsUrl: (params: SearchDirectorsParams) => string;
+/**
+ * Returns directors matching the query, best matches first, with the titles they are best known for.
+ * @summary Search directors by name
+ */
+export declare const searchDirectors: (params: SearchDirectorsParams, options?: Parameters<typeof customFetch>[1]) => Promise<DirectorSearchResponse>;
+export declare const getSearchDirectorsQueryKey: (params?: SearchDirectorsParams) => readonly ["/api/movies/director-search", ...SearchDirectorsParams[]];
+export declare const getSearchDirectorsQueryOptions: <TData = Awaited<ReturnType<typeof searchDirectors>>, TError = ErrorType<MovieErrorResponse>>(params: SearchDirectorsParams, options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof searchDirectors>>, TError, TData>;
+    request?: SecondParameter<typeof customFetch>;
+}) => UseQueryOptions<Awaited<ReturnType<typeof searchDirectors>>, TError, TData> & {
+    queryKey: QueryKey;
+};
+export type SearchDirectorsQueryResult = NonNullable<Awaited<ReturnType<typeof searchDirectors>>>;
+export type SearchDirectorsQueryError = ErrorType<MovieErrorResponse>;
+/**
+ * @summary Search directors by name
+ */
+export declare function useSearchDirectors<TData = Awaited<ReturnType<typeof searchDirectors>>, TError = ErrorType<MovieErrorResponse>>(params: SearchDirectorsParams, options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof searchDirectors>>, TError, TData>;
     request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

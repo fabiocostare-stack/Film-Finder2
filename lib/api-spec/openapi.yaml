@@ -271,6 +271,47 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MovieErrorResponse"
+  /movies/director-search:
+    get:
+      operationId: searchDirectors
+      tags: [movies]
+      summary: Search directors by name
+      description: Returns directors matching the query, best matches first, with the titles they are best known for.
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 80
+        - name: limit
+          in: query
+          description: Maximum number of director suggestions to return.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 8
+      responses:
+        "200":
+          description: Matching directors
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DirectorSearchResponse"
+        "400":
+          description: Invalid director search
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MovieErrorResponse"
+        "503":
+          description: Movie catalog is not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MovieErrorResponse"
   /movies/director-discoveries:
     get:
       operationId: getDirectorDiscoveries
@@ -518,6 +559,37 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DirectorRecommendation"
+    DirectorSearchResult:
+      type: object
+      required:
+        - id
+        - name
+        - profilePath
+        - knownFor
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        profilePath:
+          type: [string, "null"]
+        knownFor:
+          type: array
+          description: Up to three titles the director is best known for.
+          items:
+            type: string
+    DirectorSearchResponse:
+      type: object
+      required:
+        - results
+        - totalResults
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/DirectorSearchResult"
+        totalResults:
+          type: integer
     MovieErrorResponse:
       type: object
       required:

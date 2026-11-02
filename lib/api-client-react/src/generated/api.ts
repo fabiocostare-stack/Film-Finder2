@@ -17,6 +17,7 @@ import type {
 
 import type {
   DirectorDiscoveriesResponse,
+  DirectorSearchResponse,
   GetDirectorDiscoveriesParams,
   GetMovieAvailabilityParams,
   GetMovieCreditsBatchParams,
@@ -30,6 +31,7 @@ import type {
   MovieErrorResponse,
   MovieProviderListResponse,
   MovieSearchResponse,
+  SearchDirectorsParams,
   SearchMoviesParams
 } from './api.schemas';
 
@@ -630,6 +632,91 @@ export function useGetMovieCreditsBatch<TData = Awaited<ReturnType<typeof getMov
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetMovieCreditsBatchQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSearchDirectorsUrl = (params: SearchDirectorsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/movies/director-search?${stringifiedParams}` : `/api/movies/director-search`
+}
+
+/**
+ * Returns directors matching the query, best matches first, with the titles they are best known for.
+ * @summary Search directors by name
+ */
+export const searchDirectors = async (params: SearchDirectorsParams, options?: Parameters<typeof customFetch>[1]): Promise<DirectorSearchResponse> => {
+
+  return customFetch<DirectorSearchResponse>(getSearchDirectorsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getSearchDirectorsQueryKey = (params?: SearchDirectorsParams,) => {
+    return [
+    `/api/movies/director-search`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getSearchDirectorsQueryOptions = <TData = Awaited<ReturnType<typeof searchDirectors>>, TError = ErrorType<MovieErrorResponse>>(params: SearchDirectorsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchDirectors>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getSearchDirectorsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchDirectors>>> = ({ signal }) => searchDirectors(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchDirectors>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type SearchDirectorsQueryResult = NonNullable<Awaited<ReturnType<typeof searchDirectors>>>
+export type SearchDirectorsQueryError = ErrorType<MovieErrorResponse>
+
+
+/**
+ * @summary Search directors by name
+ */
+
+export function useSearchDirectors<TData = Awaited<ReturnType<typeof searchDirectors>>, TError = ErrorType<MovieErrorResponse>>(
+ params: SearchDirectorsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchDirectors>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getSearchDirectorsQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

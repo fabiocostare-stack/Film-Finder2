@@ -12,10 +12,13 @@ import {
   ListMovieProvidersQueryParams,
   ListMovieProvidersResponse,
   MovieErrorResponse,
+  SearchDirectorsQueryParams,
+  SearchDirectorsResponse,
   SearchMoviesQueryParams,
   SearchMoviesResponse,
   type DirectorProfile,
   type DirectorRecommendation,
+  type DirectorSearchResult,
   type Movie,
   type MovieProvider,
 } from "@workspace/api-zod";
@@ -74,6 +77,26 @@ type TmdbPersonMovieCredits = {
   crew?: Array<TmdbMovie & { job?: string }>;
 };
 
+type TmdbPersonSearchItem = {
+  id: number;
+  name?: string;
+  profile_path?: string | null;
+  known_for_department?: string;
+  known_for?: Array<{
+    media_type?: string;
+    title?: string;
+    name?: string;
+    original_title?: string;
+  }>;
+};
+
+type TmdbPersonSearchList = {
+  results?: TmdbPersonSearchItem[];
+  page?: number;
+  total_pages?: number;
+  total_results?: number;
+};
+
 type TmdbList<T> = {
   results?: T[];
   page?: number;
@@ -126,6 +149,25 @@ function mapProvider(provider: TmdbProvider): MovieProvider {
     name: provider.provider_name,
     logoPath: provider.logo_path ?? null,
     displayPriority: provider.display_priority ?? 999,
+  };
+}
+
+function mapDirectorSearchResult(
+  person: TmdbPersonSearchItem,
+): DirectorSearchResult {
+  const knownFor = [
+    ...new Set(
+      (person.known_for ?? [])
+        .filter((item) => item.media_type === "movie")
+        .map((item) => (item.title ?? item.original_title ?? "").trim())
+        .filter((title) => title.length > 0),
+    ),
+  ].slice(0, 3);
+  return {
+    id: person.id,
+    name: person.name?.trim() || `Regista #${person.id}`,
+    profilePath: person.profile_path ?? null,
+    knownFor,
   };
 }
 
@@ -1032,6 +1074,44 @@ router.get("/movies/recommendations", async (req, res): Promise<void> => {
         page: pageNumber,
         totalPages,
         totalResults,
+      }),
+    );
+  } catch (error) {
+    respondWithError(req, res, error);
+  }
+});
+
+router.get("/movies/director-search", async (req, res): Promise<void> => {
+  const parsed = SearchDirectorsQueryParams.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({
+      error: "Scrivi almeno due lettere per cercare un regista.",
+      code: "invalid_director_search",
+    } satisfies MovieErrorResponse);
+    return;
+  }
+
+  const { query, limit } = parsed.data;
+  try {
+    const payload = await getTmdb<TmdbPersonSearchList>(
+      "/search/person",
+      {
+        query: query.trim(),
+        language: "it-IT",
+        include_adult: "false",
+        page: 1,
+      },
+      60 * 60 * 1000,
+    );
+    // TMDB people search returns actors and crew too; keep only people whose
+    // primary department is Directing so the suggestions stay a directors list.
+    const directors = (payload.results ?? [])
+      .filter((person) => person.known_for_department === "Directing")
+      .map(mapDirectorSearchResult);
+    res.json(
+      SearchDirectorsResponse.parse({
+        results: directors.slice(0, limit ?? 8),
+        totalResults: directors.length,
       }),
     );
   } catch (error) {
