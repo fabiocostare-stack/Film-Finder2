@@ -27,6 +27,8 @@ type FilmCardProps = {
   onToggleWatched: (movie: Movie) => void;
   onToggleSave: (movie: Movie) => void;
   onDismiss?: (movie: Movie) => void;
+  /** Optional label shown as a chip, e.g. "In uscita il 12 mar 2026". */
+  releaseLabel?: string | null;
 };
 
 function yearOf(date: string): string {
@@ -49,6 +51,7 @@ export function FilmCard({
   onToggleWatched,
   onToggleSave,
   onDismiss,
+  releaseLabel,
 }: FilmCardProps) {
   const colors = useColors();
   const [showAvailability, setShowAvailability] = useState<boolean>(false);
@@ -119,6 +122,14 @@ export function FilmCard({
             : ""}
           {runtimeLabel ? ` · ${runtimeLabel}` : ""}
         </Text>
+        {releaseLabel ? (
+          <View style={[styles.releaseChip, { backgroundColor: colors.accent }]}>
+            <Feather name="calendar" size={11} color={colors.primary} />
+            <Text style={[styles.releaseChipText, { color: colors.primary }]}>
+              {releaseLabel}
+            </Text>
+          </View>
+        ) : null}
         {creditsLoading && !credits ? (
           <View style={styles.creditLoading}>
             <ActivityIndicator size="small" color={colors.primary} />
@@ -355,6 +366,17 @@ const styles = StyleSheet.create({
   rating: { flexDirection: "row", alignItems: "center", gap: 3, paddingTop: 2 },
   ratingText: { fontSize: 10, fontFamily: "Inter_600SemiBold" },
   meta: { marginTop: 5, fontSize: 9, letterSpacing: 0.4 },
+  releaseChip: {
+    alignSelf: "flex-start",
+    marginTop: 5,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  releaseChipText: { fontSize: 10, fontFamily: "Inter_600SemiBold" },
   credits: { marginTop: 8, gap: 5 },
   creditRow: { flexDirection: "row", alignItems: "flex-start", gap: 6 },
   creditText: { flex: 1, fontSize: 10, lineHeight: 14 },

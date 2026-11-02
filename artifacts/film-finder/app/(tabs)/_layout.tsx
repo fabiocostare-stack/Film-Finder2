@@ -35,20 +35,17 @@ function NativeTabLayout() {
         <NativeTabs.Trigger.Icon sf="magnifyingglass" />
         <NativeTabs.Trigger.Label>Cerca</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="in-sala">
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "film", selected: "film.fill" }}
+        />
+        <NativeTabs.Trigger.Label>In sala</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="library">
         <NativeTabs.Trigger.Icon
           sf={{ default: "bookmark", selected: "bookmark.fill" }}
         />
         <NativeTabs.Trigger.Label>Lista</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="profile">
-        <NativeTabs.Trigger.Icon
-          sf={{
-            default: "slider.horizontal.3",
-            selected: "slider.horizontal.3",
-          }}
-        />
-        <NativeTabs.Trigger.Label>Profilo</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -123,6 +120,18 @@ function ClassicTabLayout() {
         }}
       />
       <Tabs.Screen
+        name="in-sala"
+        options={{
+          title: "In sala",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="film" tintColor={color} size={22} />
+            ) : (
+              <Feather name="film" size={21} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
         name="library"
         options={{
           title: "Lista",
@@ -131,22 +140,6 @@ function ClassicTabLayout() {
               <SymbolView name="bookmark" tintColor={color} size={22} />
             ) : (
               <Feather name="bookmark" size={21} color={color} />
-            ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profilo",
-          tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView
-                name="slider.horizontal.3"
-                tintColor={color}
-                size={22}
-              />
-            ) : (
-              <Feather name="sliders" size={21} color={color} />
             ),
         }}
       />

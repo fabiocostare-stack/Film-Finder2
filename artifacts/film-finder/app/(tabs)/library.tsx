@@ -8,6 +8,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FilmCard } from "@/components/FilmCard";
+import { ProfileShortcut } from "@/components/ProfileShortcut";
 import { usePreferences } from "@/context/PreferencesContext";
 import { useMovieCredits } from "@/hooks/useMovieCredits";
 import { useColors } from "@/hooks/useColors";
@@ -34,7 +35,12 @@ export default function LibraryScreen() {
       ]}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={[styles.eyebrow, { color: colors.primary }]}>LA TUA CINETECA</Text>
+      <View style={styles.topRow}>
+        <Text style={[styles.eyebrow, { color: colors.primary }]}>
+          LA TUA CINETECA
+        </Text>
+        <ProfileShortcut />
+      </View>
       <Text style={[styles.title, { color: colors.foreground }]}>La mia lista</Text>
       <Text style={[styles.description, { color: colors.mutedForeground }]}>
         Film da guardare e film che hai già visto.
@@ -153,6 +159,12 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { paddingHorizontal: 20, gap: 15 },
   eyebrow: { marginTop: 6, fontSize: 11, fontFamily: "Inter_700Bold", letterSpacing: 2.4 },
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
   title: { marginTop: -5, fontSize: 32, letterSpacing: -1, fontFamily: "Inter_700Bold" },
   description: { marginTop: -9, marginBottom: 12, fontSize: 14, lineHeight: 21 },
   sectionTitleRow: {

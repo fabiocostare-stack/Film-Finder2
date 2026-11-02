@@ -21,6 +21,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FilmCard } from "@/components/FilmCard";
 import { DirectorDiscovery } from "@/components/DirectorDiscovery";
+import { ProfileShortcut } from "@/components/ProfileShortcut";
 import {
   CatalogNotice,
   getCatalogErrorMessage,
@@ -295,11 +296,14 @@ export default function HomeScreen() {
             )}
           </Text>
         </View>
-        <View style={[styles.regionBadge, { borderColor: colors.border }]}>
-          <Feather name="map-pin" size={13} color={colors.mutedForeground} />
-          <Text style={[styles.regionText, { color: colors.mutedForeground }]}>
-            ITALIA
-          </Text>
+        <View style={styles.toplineActions}>
+          <View style={[styles.regionBadge, { borderColor: colors.border }]}>
+            <Feather name="map-pin" size={13} color={colors.mutedForeground} />
+            <Text style={[styles.regionText, { color: colors.mutedForeground }]}>
+              ITALIA
+            </Text>
+          </View>
+          <ProfileShortcut />
         </View>
       </View>
 
@@ -687,6 +691,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 12,
   },
+  toplineActions: { alignItems: "flex-end", gap: 8 },
   eyebrow: { fontSize: 11, fontFamily: "Inter_700Bold", letterSpacing: 2.5 },
   pageTitle: {
     marginTop: 10,
