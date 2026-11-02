@@ -31,13 +31,15 @@ function NativeTabLayout() {
         />
         <NativeTabs.Trigger.Label>Registi</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="search" role="search">
-        <NativeTabs.Trigger.Icon sf="magnifyingglass" />
-        <NativeTabs.Trigger.Label>Cerca</NativeTabs.Trigger.Label>
+      <NativeTabs.Trigger name="titoli">
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "film", selected: "film.fill" }}
+        />
+        <NativeTabs.Trigger.Label>Titoli</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="in-sala">
         <NativeTabs.Trigger.Icon
-          sf={{ default: "film", selected: "film.fill" }}
+          sf={{ default: "calendar", selected: "calendar" }}
         />
         <NativeTabs.Trigger.Label>In sala</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
@@ -108,14 +110,14 @@ function ClassicTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="search"
+        name="titoli"
         options={{
-          title: "Cerca",
+          title: "Titoli",
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="magnifyingglass" tintColor={color} size={22} />
+              <SymbolView name="film" tintColor={color} size={22} />
             ) : (
-              <Feather name="search" size={21} color={color} />
+              <Feather name="film" size={21} color={color} />
             ),
         }}
       />
@@ -125,9 +127,9 @@ function ClassicTabLayout() {
           title: "In sala",
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="film" tintColor={color} size={22} />
+              <SymbolView name="calendar" tintColor={color} size={22} />
             ) : (
-              <Feather name="film" size={21} color={color} />
+              <Feather name="calendar" size={21} color={color} />
             ),
         }}
       />
