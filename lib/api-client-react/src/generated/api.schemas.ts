@@ -20,6 +20,8 @@ export interface Movie {
   backdropPath: string | null;
   releaseDate: string;
   voteAverage: number;
+  /** Number of TMDB ratings, used to weight how reliable voteAverage is. */
+  voteCount?: number;
   genreIds: number[];
   originalLanguage: string;
 }
@@ -92,6 +94,14 @@ export interface DirectorDiscoveriesResponse {
   discover: DirectorRecommendation[];
 }
 
+export interface InTheatersResponse {
+  region: string;
+  /** Films currently showing in the region's cinemas, most popular first. */
+  nowPlaying: Movie[];
+  /** Next theatrical releases in the region, soonest first. */
+  upcoming: Movie[];
+}
+
 export interface DirectorSearchResult {
   id: number;
   name: string;
@@ -130,6 +140,14 @@ region?: string;
 };
 
 export type ListMovieProvidersParams = {
+/**
+ * @minLength 2
+ * @maxLength 2
+ */
+region?: string;
+};
+
+export type ListMoviesInTheatersParams = {
 /**
  * @minLength 2
  * @maxLength 2

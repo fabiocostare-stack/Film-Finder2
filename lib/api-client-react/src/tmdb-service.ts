@@ -5,6 +5,7 @@ import type {
   DirectorSearchResponse,
   DirectorSearchResult,
   HealthStatus,
+  InTheatersResponse,
   Movie,
   MovieAvailabilityResponse,
   MovieCreditsBatchResponse,
@@ -167,6 +168,7 @@ function mapMovie(movie: TmdbMovie): Movie {
     backdropPath: movie.backdrop_path ?? null,
     releaseDate: movie.release_date ?? "",
     voteAverage: movie.vote_average ?? 0,
+    voteCount: movie.vote_count ?? 0,
     genreIds: movie.genre_ids ?? [],
     originalLanguage: movie.original_language ?? "",
   };
@@ -216,6 +218,46 @@ function rotateItems<T>(items: readonly T[], offset: number): T[] {
   if (items.length === 0) return [];
   const start = offset % items.length;
   return [...items.slice(start), ...items.slice(0, start)];
+}
+
+function uniqueMovies(movies?: TmdbMovie[]): TmdbMovie[] {
+  const byId = new Map<number, TmdbMovie>();
+  for (const movie of movies ?? []) {
+    if (!movie?.id || !movie.title?.trim()) continue;
+    byId.set(movie.id, movie);
+  }
+  return [...byId.values()];
+}
+
+function todayIsoDate(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+async function loadInTheaters(region: string): Promise<InTheatersResponse> {
+  const [nowPlayingPayload, upcomingPayload] = await Promise.all([
+    getTmdb<TmdbList<TmdbMovie>>(
+      "/movie/now_playing",
+      { language: "it-IT", region, page: 1 },
+      60 * 60 * 1000,
+    ),
+    getTmdb<TmdbList<TmdbMovie>>(
+      "/movie/upcoming",
+      { language: "it-IT", region, page: 1 },
+      60 * 60 * 1000,
+    ),
+  ]);
+
+  const nowPlaying = uniqueMovies(nowPlayingPayload.results)
+    .slice(0, 18)
+    .map(mapMovie);
+  const today = todayIsoDate();
+  const upcoming = uniqueMovies(upcomingPayload.results)
+    .filter((movie) => (movie.release_date ?? "") >= today)
+    .sort((a, b) => (a.release_date ?? "").localeCompare(b.release_date ?? ""))
+    .slice(0, 15)
+    .map(mapMovie);
+
+  return { region, nowPlaying, upcoming };
 }
 
 const genreTerms: Record<number, string[]> = {
@@ -998,6 +1040,18 @@ export async function handleClientApiRequest(
       );
     const result: MovieProviderListResponse = { region, results };
     return result;
+  }
+
+  if (path === "/api/movies/in-theaters") {
+    const region = (searchParams.get("region") ?? "IT").toUpperCase();
+    if (!/^[A-Z]{2}$/.test(region)) {
+      throw new ClientMovieError(
+        400,
+        "invalid_region",
+        "La regione indicata non è valida.",
+      );
+    }
+    return loadInTheaters(region);
   }
 
   if (path === "/api/movies/recommendations") {

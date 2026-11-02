@@ -47,6 +47,7 @@ export const SearchMoviesResponse = zod.object({
   "backdropPath": zod.string().nullable(),
   "releaseDate": zod.string(),
   "voteAverage": zod.number(),
+  "voteCount": zod.number().int().optional().describe('Number of TMDB ratings, used to weight how reliable voteAverage is.'),
   "genreIds": zod.array(zod.number().int()),
   "originalLanguage": zod.string()
 })),
@@ -77,6 +78,51 @@ export const ListMovieProvidersResponse = zod.object({
   "logoPath": zod.string().nullable(),
   "displayPriority": zod.number().int()
 }))
+})
+
+
+/**
+ * Returns theatrical releases already showing in the region plus the next releases, ordered by popularity and release date.
+ * @summary Movies currently in cinemas and upcoming releases in a region
+ */
+export const listMoviesInTheatersQueryRegionDefault = `IT`;
+export const listMoviesInTheatersQueryRegionMin = 2;
+export const listMoviesInTheatersQueryRegionMax = 2;
+
+
+
+export const ListMoviesInTheatersQueryParams = zod.object({
+  "region": zod.coerce.string().min(listMoviesInTheatersQueryRegionMin).max(listMoviesInTheatersQueryRegionMax).default(listMoviesInTheatersQueryRegionDefault)
+})
+
+export const ListMoviesInTheatersResponse = zod.object({
+  "region": zod.string(),
+  "nowPlaying": zod.array(zod.object({
+  "id": zod.number().int(),
+  "title": zod.string(),
+  "originalTitle": zod.string(),
+  "overview": zod.string(),
+  "posterPath": zod.string().nullable(),
+  "backdropPath": zod.string().nullable(),
+  "releaseDate": zod.string(),
+  "voteAverage": zod.number(),
+  "voteCount": zod.number().int().optional().describe('Number of TMDB ratings, used to weight how reliable voteAverage is.'),
+  "genreIds": zod.array(zod.number().int()),
+  "originalLanguage": zod.string()
+})).describe('Films currently showing in the region\'s cinemas, most popular first.'),
+  "upcoming": zod.array(zod.object({
+  "id": zod.number().int(),
+  "title": zod.string(),
+  "originalTitle": zod.string(),
+  "overview": zod.string(),
+  "posterPath": zod.string().nullable(),
+  "backdropPath": zod.string().nullable(),
+  "releaseDate": zod.string(),
+  "voteAverage": zod.number(),
+  "voteCount": zod.number().int().optional().describe('Number of TMDB ratings, used to weight how reliable voteAverage is.'),
+  "genreIds": zod.array(zod.number().int()),
+  "originalLanguage": zod.string()
+})).describe('Next theatrical releases in the region, soonest first.')
 })
 
 
@@ -122,6 +168,7 @@ export const GetMovieRecommendationsResponse = zod.object({
   "backdropPath": zod.string().nullable(),
   "releaseDate": zod.string(),
   "voteAverage": zod.number(),
+  "voteCount": zod.number().int().optional().describe('Number of TMDB ratings, used to weight how reliable voteAverage is.'),
   "genreIds": zod.array(zod.number().int()),
   "originalLanguage": zod.string()
 })),
@@ -273,6 +320,7 @@ export const GetDirectorDiscoveriesResponse = zod.object({
   "backdropPath": zod.string().nullable(),
   "releaseDate": zod.string(),
   "voteAverage": zod.number(),
+  "voteCount": zod.number().int().optional().describe('Number of TMDB ratings, used to weight how reliable voteAverage is.'),
   "genreIds": zod.array(zod.number().int()),
   "originalLanguage": zod.string()
 }))
@@ -293,6 +341,7 @@ export const GetDirectorDiscoveriesResponse = zod.object({
   "backdropPath": zod.string().nullable(),
   "releaseDate": zod.string(),
   "voteAverage": zod.number(),
+  "voteCount": zod.number().int().optional().describe('Number of TMDB ratings, used to weight how reliable voteAverage is.'),
   "genreIds": zod.array(zod.number().int()),
   "originalLanguage": zod.string()
 }))

@@ -20,6 +20,7 @@ import type { SearchMoviesParams } from "@workspace/api-client-react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CatalogNotice, getCatalogErrorMessage } from "@/components/CatalogNotice";
 import { DirectorSearch } from "@/components/DirectorSearch";
+import { ProfileShortcut } from "@/components/ProfileShortcut";
 import { FilmCard } from "@/components/FilmCard";
 import { usePreferences } from "@/context/PreferencesContext";
 import { useMovieCredits } from "@/hooks/useMovieCredits";
@@ -75,7 +76,12 @@ export default function SearchScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.eyebrow, { color: colors.primary }]}>ESPLORA</Text>
+        <View style={styles.topRow}>
+          <Text style={[styles.eyebrow, { color: colors.primary }]}>
+            ESPLORA
+          </Text>
+          <ProfileShortcut />
+        </View>
         <Text style={[styles.title, { color: colors.foreground }]}>
           {mode === "movies" ? (
             <>Cerca quel{"\n"}film che hai in mente.</>
@@ -257,6 +263,12 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { paddingHorizontal: 20, gap: 16 },
   eyebrow: { marginTop: 6, fontSize: 11, fontFamily: "Inter_700Bold", letterSpacing: 2.4 },
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
   title: { fontSize: 32, lineHeight: 38, letterSpacing: -1, fontFamily: "Inter_700Bold" },
   description: { maxWidth: 330, fontSize: 14, lineHeight: 21 },
   segment: {

@@ -11,6 +11,8 @@ import {
   GetMovieRecommendationsResponse,
   ListMovieProvidersQueryParams,
   ListMovieProvidersResponse,
+  ListMoviesInTheatersQueryParams,
+  ListMoviesInTheatersResponse,
   MovieErrorResponse,
   SearchDirectorsQueryParams,
   SearchDirectorsResponse,
@@ -19,6 +21,7 @@ import {
   type DirectorProfile,
   type DirectorRecommendation,
   type DirectorSearchResult,
+  type InTheatersResponse,
   type Movie,
   type MovieProvider,
 } from "@workspace/api-zod";
@@ -138,6 +141,7 @@ function mapMovie(movie: TmdbMovie): Movie {
     backdropPath: movie.backdrop_path ?? null,
     releaseDate: movie.release_date ?? "",
     voteAverage: movie.vote_average ?? 0,
+    voteCount: movie.vote_count ?? 0,
     genreIds: movie.genre_ids ?? [],
     originalLanguage: movie.original_language ?? "",
   };
@@ -169,6 +173,42 @@ function mapDirectorSearchResult(
     profilePath: person.profile_path ?? null,
     knownFor,
   };
+}
+
+function uniqueMovies(movies?: TmdbMovie[]): TmdbMovie[] {
+  const byId = new Map<number, TmdbMovie>();
+  for (const movie of movies ?? []) {
+    if (!movie?.id || !movie.title?.trim()) continue;
+    byId.set(movie.id, movie);
+  }
+  return [...byId.values()];
+}
+
+async function loadInTheaters(region: string): Promise<InTheatersResponse> {
+  const [nowPlayingPayload, upcomingPayload] = await Promise.all([
+    getTmdb<TmdbList<TmdbMovie>>(
+      "/movie/now_playing",
+      { language: "it-IT", region, page: 1 },
+      60 * 60 * 1000,
+    ),
+    getTmdb<TmdbList<TmdbMovie>>(
+      "/movie/upcoming",
+      { language: "it-IT", region, page: 1 },
+      60 * 60 * 1000,
+    ),
+  ]);
+
+  const nowPlaying = uniqueMovies(nowPlayingPayload.results)
+    .slice(0, 18)
+    .map(mapMovie);
+  const today = new Date().toISOString().slice(0, 10);
+  const upcoming = uniqueMovies(upcomingPayload.results)
+    .filter((movie) => (movie.release_date ?? "") >= today)
+    .sort((a, b) => (a.release_date ?? "").localeCompare(b.release_date ?? ""))
+    .slice(0, 15)
+    .map(mapMovie);
+
+  return { region, nowPlaying, upcoming };
 }
 
 function parseIds(value?: string): number[] {
@@ -849,6 +889,24 @@ router.get("/movies/providers", async (req, res): Promise<void> => {
         results,
       }),
     );
+  } catch (error) {
+    respondWithError(req, res, error);
+  }
+});
+
+router.get("/movies/in-theaters", async (req, res): Promise<void> => {
+  const parsed = ListMoviesInTheatersQueryParams.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({
+      error: "La regione indicata non è valida.",
+      code: "invalid_region",
+    } satisfies MovieErrorResponse);
+    return;
+  }
+
+  const region = (parsed.data.region ?? "IT").toUpperCase();
+  try {
+    res.json(ListMoviesInTheatersResponse.parse(await loadInTheaters(region)));
   } catch (error) {
     respondWithError(req, res, error);
   }

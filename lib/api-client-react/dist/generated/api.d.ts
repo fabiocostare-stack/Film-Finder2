@@ -1,5 +1,5 @@
 import type { QueryKey, UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
-import type { DirectorDiscoveriesResponse, DirectorSearchResponse, GetDirectorDiscoveriesParams, GetMovieAvailabilityParams, GetMovieCreditsBatchParams, GetMovieCreditsParams, GetMovieRecommendationsParams, HealthStatus, ListMovieProvidersParams, MovieAvailabilityResponse, MovieCreditsBatchResponse, MovieCreditsResponse, MovieErrorResponse, MovieProviderListResponse, MovieSearchResponse, SearchDirectorsParams, SearchMoviesParams } from './api.schemas';
+import type { DirectorDiscoveriesResponse, DirectorSearchResponse, GetDirectorDiscoveriesParams, GetMovieAvailabilityParams, GetMovieCreditsBatchParams, GetMovieCreditsParams, GetMovieRecommendationsParams, HealthStatus, InTheatersResponse, ListMovieProvidersParams, ListMoviesInTheatersParams, MovieAvailabilityResponse, MovieCreditsBatchResponse, MovieCreditsResponse, MovieErrorResponse, MovieProviderListResponse, MovieSearchResponse, SearchDirectorsParams, SearchMoviesParams } from './api.schemas';
 import { customFetch } from '../custom-fetch';
 import type { ErrorType } from '../custom-fetch';
 type AwaitedInput<T> = PromiseLike<T> | T;
@@ -71,6 +71,30 @@ export type ListMovieProvidersQueryError = ErrorType<MovieErrorResponse>;
  */
 export declare function useListMovieProviders<TData = Awaited<ReturnType<typeof listMovieProviders>>, TError = ErrorType<MovieErrorResponse>>(params?: ListMovieProvidersParams, options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof listMovieProviders>>, TError, TData>;
+    request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+};
+export declare const getListMoviesInTheatersUrl: (params?: ListMoviesInTheatersParams) => string;
+/**
+ * Returns theatrical releases already showing in the region plus the next releases, ordered by popularity and release date.
+ * @summary Movies currently in cinemas and upcoming releases in a region
+ */
+export declare const listMoviesInTheaters: (params?: ListMoviesInTheatersParams, options?: Parameters<typeof customFetch>[1]) => Promise<InTheatersResponse>;
+export declare const getListMoviesInTheatersQueryKey: (params?: ListMoviesInTheatersParams) => readonly ["/api/movies/in-theaters", ...ListMoviesInTheatersParams[]];
+export declare const getListMoviesInTheatersQueryOptions: <TData = Awaited<ReturnType<typeof listMoviesInTheaters>>, TError = ErrorType<MovieErrorResponse>>(params?: ListMoviesInTheatersParams, options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof listMoviesInTheaters>>, TError, TData>;
+    request?: SecondParameter<typeof customFetch>;
+}) => UseQueryOptions<Awaited<ReturnType<typeof listMoviesInTheaters>>, TError, TData> & {
+    queryKey: QueryKey;
+};
+export type ListMoviesInTheatersQueryResult = NonNullable<Awaited<ReturnType<typeof listMoviesInTheaters>>>;
+export type ListMoviesInTheatersQueryError = ErrorType<MovieErrorResponse>;
+/**
+ * @summary Movies currently in cinemas and upcoming releases in a region
+ */
+export declare function useListMoviesInTheaters<TData = Awaited<ReturnType<typeof listMoviesInTheaters>>, TError = ErrorType<MovieErrorResponse>>(params?: ListMoviesInTheatersParams, options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof listMoviesInTheaters>>, TError, TData>;
     request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

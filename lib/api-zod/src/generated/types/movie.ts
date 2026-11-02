@@ -17,6 +17,8 @@ export interface Movie {
   backdropPath: string | null;
   releaseDate: string;
   voteAverage: number;
+  /** Number of TMDB ratings, used to weight how reliable voteAverage is. */
+  voteCount?: number;
   genreIds: number[];
   originalLanguage: string;
 }
