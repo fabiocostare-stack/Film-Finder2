@@ -195,7 +195,7 @@ const genreTerms: Record<number, string[]> = {
   10752: ["guerra", "bellico", "war"],
 };
 
-function inferGenres(taste?: string): number[] {
+export function inferGenres(taste?: string): number[] {
   if (!taste) return [];
   const normalized = taste.toLocaleLowerCase("it-IT");
   return Object.entries(genreTerms)
@@ -1468,4 +1468,40 @@ export async function handleClientApiRequest(
   }
 
   throw new ClientMovieError(404, "not_found", `Route non trovata: ${path}`);
+}
+
+export type InTheaters = { nowPlaying: Movie[]; upcoming: Movie[] };
+
+export async function loadInTheaters(region = "IT"): Promise<InTheaters> {
+  const today = new Date().toISOString().slice(0, 10);
+  const fetchPages = async (path: string): Promise<Movie[]> => {
+    const load = (page: number) =>
+      getTmdb<{ results?: TmdbMovie[] }>(
+        path,
+        { language: "it-IT", region, page },
+        30 * 60 * 1000,
+      );
+    const first = await load(1);
+    const second = await load(2).catch(() => ({ results: [] as TmdbMovie[] }));
+    const pages = [first, second];
+    const seen = new Set<number>();
+    const movies: Movie[] = [];
+    for (const page of pages) {
+      for (const item of page.results ?? []) {
+        if (seen.has(item.id) || !item.poster_path) continue;
+        seen.add(item.id);
+        movies.push(mapMovie(item));
+      }
+    }
+    return movies;
+  };
+  const [nowPlaying, upcomingRaw] = await Promise.all([
+    fetchPages("/movie/now_playing"),
+    fetchPages("/movie/upcoming"),
+  ]);
+  const nowIds = new Set(nowPlaying.map((movie) => movie.id));
+  const upcoming = upcomingRaw
+    .filter((movie) => !nowIds.has(movie.id) && movie.releaseDate >= today)
+    .sort((a, b) => a.releaseDate.localeCompare(b.releaseDate));
+  return { nowPlaying, upcoming };
 }
