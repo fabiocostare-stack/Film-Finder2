@@ -31,6 +31,10 @@ function NativeTabLayout() {
         />
         <NativeTabs.Trigger.Label>Registi</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="in-sala">
+        <NativeTabs.Trigger.Icon sf="film" />
+        <NativeTabs.Trigger.Label>In Sala</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="search" role="search">
         <NativeTabs.Trigger.Icon sf="magnifyingglass" />
         <NativeTabs.Trigger.Label>Cerca</NativeTabs.Trigger.Label>
@@ -123,6 +127,18 @@ function ClassicTabLayout() {
               <SymbolView name="magnifyingglass" tintColor={color} size={22} />
             ) : (
               <Feather name="search" size={21} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="in-sala"
+        options={{
+          title: "In Sala",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="film" tintColor={color} size={22} />
+            ) : (
+              <Feather name="film" size={21} color={color} />
             ),
         }}
       />
