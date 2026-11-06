@@ -9,11 +9,10 @@ import {
   View,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
 import {
-  getListMoviesInTheatersQueryKey,
   inferGenres,
-  useListMoviesInTheaters,
-  type ListMoviesInTheatersParams,
+  loadInTheaters,
   type Movie,
 } from "@workspace/api-client-react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -26,11 +25,46 @@ import { ProfileShortcut } from "@/components/ProfileShortcut";
 import { usePreferences } from "@/context/PreferencesContext";
 import { useMovieCredits } from "@/hooks/useMovieCredits";
 import { useColors } from "@/hooks/useColors";
-import {
-  buildTasteProfile,
-  hasTasteSignals,
-  rankMoviesByTasteAndRating,
-} from "@/lib/movieScore";
+
+type TasteProfile = { genreWeights: Map<number, number>; hasSignals: boolean };
+
+function buildTasteProfile(
+  watched: Movie[],
+  tasteGenreIds: number[],
+): TasteProfile {
+  const genreWeights = new Map<number, number>();
+  for (const movie of watched) {
+    for (const id of movie.genreIds ?? []) {
+      genreWeights.set(id, (genreWeights.get(id) ?? 0) + 1);
+    }
+  }
+  for (const id of tasteGenreIds) {
+    genreWeights.set(id, (genreWeights.get(id) ?? 0) + 3);
+  }
+  return { genreWeights, hasSignals: genreWeights.size > 0 };
+}
+
+function hasTasteSignals(profile: TasteProfile): boolean {
+  return profile.hasSignals;
+}
+
+function rankMoviesByTasteAndRating(
+  movies: Movie[],
+  profile: TasteProfile,
+): Movie[] {
+  const total =
+    [...profile.genreWeights.values()].reduce((sum, value) => sum + value, 0) ||
+    1;
+  const score = (movie: Movie) => {
+    const taste =
+      (movie.genreIds ?? []).reduce(
+        (sum, id) => sum + (profile.genreWeights.get(id) ?? 0),
+        0,
+      ) / total;
+    return taste * 10 + movie.voteAverage;
+  };
+  return [...movies].sort((a, b) => score(b) - score(a));
+}
 
 const REGION = "IT";
 const STALE_TIME = 30 * 60 * 1000;
@@ -75,14 +109,12 @@ export default function InTheatersScreen() {
   const { preferences, toggleWatchedMovie, toggleSavedMovie } = usePreferences();
   const [listMode, setListMode] = useState<ListMode>("now");
 
-  const params: ListMoviesInTheatersParams = { region: REGION };
-  const catalog = useListMoviesInTheaters(params, {
-    query: {
-      queryKey: getListMoviesInTheatersQueryKey(params),
-      staleTime: STALE_TIME,
-      refetchOnWindowFocus: false,
-      retry: false,
-    },
+  const catalog = useQuery({
+    queryKey: ["in-theaters-v1", REGION],
+    queryFn: () => loadInTheaters(REGION),
+    staleTime: STALE_TIME,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
 
   const tasteGenreIds = useMemo(
