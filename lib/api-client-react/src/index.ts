@@ -7,6 +7,8 @@ export {
   inferGenres,
   loadDirectorFilmography,
   loadMoviesOnProviders,
+  loadMoviesAvailableInRegion,
+  resolveMoviesByTitle,
 } from "./tmdb-service";
 export type { DirectorFilmography } from "./tmdb-service";
 export type { AuthTokenGetter } from "./custom-fetch";

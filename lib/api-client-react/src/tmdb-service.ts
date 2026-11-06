@@ -2,8 +2,6 @@ import type {
   DirectorDiscoveriesResponse,
   DirectorProfile,
   DirectorRecommendation,
-  DirectorSearchResponse,
-  DirectorSearchResult,
   HealthStatus,
   InTheatersResponse,
   Movie,
@@ -117,27 +115,6 @@ type TmdbPersonMovieCredits = {
   crew?: Array<TmdbMovie & { job?: string }>;
 };
 
-type TmdbPersonSearchItem = {
-  id: number;
-  name?: string;
-  profile_path?: string | null;
-  known_for_department?: string;
-  popularity?: number;
-  known_for?: Array<{
-    media_type?: string;
-    title?: string;
-    name?: string;
-    original_title?: string;
-  }>;
-};
-
-type TmdbPersonSearchList = {
-  results?: TmdbPersonSearchItem[];
-  page?: number;
-  total_pages?: number;
-  total_results?: number;
-};
-
 type TmdbList<T> = {
   results?: T[];
   page?: number;
@@ -154,6 +131,8 @@ type TmdbAvailability = {
       flatrate?: TmdbProvider[];
       free?: TmdbProvider[];
       ads?: TmdbProvider[];
+      rent?: TmdbProvider[];
+      buy?: TmdbProvider[];
     }
   >;
 };
@@ -180,29 +159,6 @@ function mapProvider(provider: TmdbProvider): MovieProvider {
     name: provider.provider_name,
     logoPath: provider.logo_path ?? null,
     displayPriority: provider.display_priority ?? 999,
-  };
-}
-
-function isDirectingPerson(person: TmdbPersonSearchItem): boolean {
-  return person.known_for_department === "Directing";
-}
-
-function mapDirectorSearchResult(
-  person: TmdbPersonSearchItem,
-): DirectorSearchResult {
-  const knownFor = [
-    ...new Set(
-      (person.known_for ?? [])
-        .filter((item) => item.media_type === "movie")
-        .map((item) => (item.title ?? item.original_title ?? "").trim())
-        .filter((title) => title.length > 0),
-    ),
-  ].slice(0, 3);
-  return {
-    id: person.id,
-    name: person.name?.trim() || `Regista #${person.id}`,
-    profilePath: person.profile_path ?? null,
-    knownFor,
   };
 }
 
@@ -968,6 +924,96 @@ export async function loadMoviesOnProviders(
   return available;
 }
 
+export async function loadMoviesAvailableInRegion(
+  movieIds: number[],
+  region = "IT",
+): Promise<number[]> {
+  const available: number[] = [];
+  for (let offset = 0; offset < movieIds.length; offset += 6) {
+    const batch = movieIds.slice(offset, offset + 6);
+    const responses = await Promise.allSettled(
+      batch.map((movieId) =>
+        getTmdb<TmdbAvailability>(
+          `/movie/${movieId}/watch/providers`,
+          {},
+          6 * 60 * 60 * 1000,
+        ),
+      ),
+    );
+    responses.forEach((response, index) => {
+      if (response.status !== "fulfilled") return;
+      const info = response.value.results?.[region];
+      const anywhere = [
+        ...(info?.flatrate ?? []),
+        ...(info?.free ?? []),
+        ...(info?.ads ?? []),
+        ...(info?.rent ?? []),
+        ...(info?.buy ?? []),
+      ];
+      if (anywhere.length > 0) available.push(batch[index]);
+    });
+  }
+  return available;
+}
+
+export async function resolveMoviesByTitle(
+  items: Array<{ title: string; year: number }>,
+): Promise<Array<Movie | null>> {
+  const resolveOne = async (item: {
+    title: string;
+    year: number;
+  }): Promise<Movie | null> => {
+    // Solo film con un voto discreto e abbastanza conosciuti.
+    const isWellKnown = (movie: TmdbMovie) =>
+      (movie.vote_average ?? 0) >= 6.4 && (movie.vote_count ?? 0) >= 150;
+    const yearOf = (movie: TmdbMovie) =>
+      Number((movie.release_date ?? "").slice(0, 4)) || 0;
+    const pick = (results: TmdbMovie[]): TmdbMovie | null => {
+      const close = results.filter(
+        (movie) => Math.abs(yearOf(movie) - item.year) <= 1,
+      );
+      close.sort(
+        (a, b) =>
+          Math.abs(yearOf(a) - item.year) - Math.abs(yearOf(b) - item.year) ||
+          (b.vote_count ?? 0) - (a.vote_count ?? 0),
+      );
+      return close[0] ?? null;
+    };
+    const base = {
+      query: item.title,
+      language: "it-IT",
+      include_adult: "false",
+    };
+    try {
+      const withYear = await getTmdb<TmdbList<TmdbMovie>>(
+        "/search/movie",
+        { ...base, primary_release_year: item.year },
+        24 * 60 * 60 * 1000,
+      );
+      const exact = pick(withYear.results ?? []);
+      if (exact) return isWellKnown(exact) ? mapMovie(exact) : null;
+      const anyYear = await getTmdb<TmdbList<TmdbMovie>>(
+        "/search/movie",
+        base,
+        24 * 60 * 60 * 1000,
+      );
+      const loose = pick(anyYear.results ?? []);
+      return loose && isWellKnown(loose) ? mapMovie(loose) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const results: Array<Movie | null> = [];
+  for (let offset = 0; offset < items.length; offset += 6) {
+    const batch = await Promise.all(
+      items.slice(offset, offset + 6).map(resolveOne),
+    );
+    results.push(...batch);
+  }
+  return results;
+}
+
 export async function loadMovieCredits(
   movieId: number,
 ): Promise<MovieCreditsResponse> {
@@ -1269,36 +1315,6 @@ export async function handleClientApiRequest(
       page: pageNumber,
       totalPages,
       totalResults,
-    };
-    return response;
-  }
-
-  if (path === "/api/movies/director-search") {
-    const query = searchParams.get("query")?.trim() ?? "";
-    if (query.length < 2) {
-      throw new ClientMovieError(
-        400,
-        "invalid_director_search",
-        "Scrivi almeno due lettere per cercare un regista.",
-      );
-    }
-    const requestedLimit = Number(searchParams.get("limit"));
-    const limit = Number.isFinite(requestedLimit) && requestedLimit > 0
-      ? Math.min(requestedLimit, 20)
-      : 8;
-    const payload = await getTmdb<TmdbPersonSearchList>(
-      "/search/person",
-      { query, language: "it-IT", include_adult: "false", page: 1 },
-      60 * 60 * 1000,
-    );
-    // TMDB people search returns actors and crew too; keep only people whose
-    // primary department is Directing so the suggestions stay a directors list.
-    const directors = (payload.results ?? [])
-      .filter(isDirectingPerson)
-      .map(mapDirectorSearchResult);
-    const response: DirectorSearchResponse = {
-      results: directors.slice(0, limit),
-      totalResults: directors.length,
     };
     return response;
   }

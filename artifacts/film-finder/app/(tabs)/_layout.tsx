@@ -43,6 +43,10 @@ function NativeTabLayout() {
         />
         <NativeTabs.Trigger.Label>In sala</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="travel">
+        <NativeTabs.Trigger.Icon sf="globe" />
+        <NativeTabs.Trigger.Label>Viaggi</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="library">
         <NativeTabs.Trigger.Icon
           sf={{ default: "bookmark", selected: "bookmark.fill" }}
@@ -130,6 +134,18 @@ function ClassicTabLayout() {
               <SymbolView name="calendar" tintColor={color} size={22} />
             ) : (
               <Feather name="calendar" size={21} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="travel"
+        options={{
+          title: "Viaggi",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="globe" tintColor={color} size={22} />
+            ) : (
+              <Feather name="globe" size={21} color={color} />
             ),
         }}
       />
