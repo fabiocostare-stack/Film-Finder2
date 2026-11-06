@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - master
+      - Ripartenza-2-nov
   workflow_dispatch:
 
 permissions:
