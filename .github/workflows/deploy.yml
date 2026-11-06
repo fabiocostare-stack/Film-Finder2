@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - master
+      - cline/awy8wvhs
   workflow_dispatch:
 
 permissions:
