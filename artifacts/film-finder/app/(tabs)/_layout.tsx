@@ -31,9 +31,17 @@ function NativeTabLayout() {
         />
         <NativeTabs.Trigger.Label>Registi</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="search" role="search">
-        <NativeTabs.Trigger.Icon sf="magnifyingglass" />
-        <NativeTabs.Trigger.Label>Cerca</NativeTabs.Trigger.Label>
+      <NativeTabs.Trigger name="titoli">
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "film", selected: "film.fill" }}
+        />
+        <NativeTabs.Trigger.Label>Titoli</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="in-sala">
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "calendar", selected: "calendar" }}
+        />
+        <NativeTabs.Trigger.Label>In sala</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="travel">
         <NativeTabs.Trigger.Icon sf="globe" />
@@ -44,15 +52,6 @@ function NativeTabLayout() {
           sf={{ default: "bookmark", selected: "bookmark.fill" }}
         />
         <NativeTabs.Trigger.Label>Lista</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="profile">
-        <NativeTabs.Trigger.Icon
-          sf={{
-            default: "slider.horizontal.3",
-            selected: "slider.horizontal.3",
-          }}
-        />
-        <NativeTabs.Trigger.Label>Profilo</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -115,14 +114,26 @@ function ClassicTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="search"
+        name="titoli"
         options={{
-          title: "Cerca",
+          title: "Titoli",
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="magnifyingglass" tintColor={color} size={22} />
+              <SymbolView name="film" tintColor={color} size={22} />
             ) : (
-              <Feather name="search" size={21} color={color} />
+              <Feather name="film" size={21} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="in-sala"
+        options={{
+          title: "In sala",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="calendar" tintColor={color} size={22} />
+            ) : (
+              <Feather name="calendar" size={21} color={color} />
             ),
         }}
       />
@@ -147,22 +158,6 @@ function ClassicTabLayout() {
               <SymbolView name="bookmark" tintColor={color} size={22} />
             ) : (
               <Feather name="bookmark" size={21} color={color} />
-            ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profilo",
-          tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView
-                name="slider.horizontal.3"
-                tintColor={color}
-                size={22}
-              />
-            ) : (
-              <Feather name="sliders" size={21} color={color} />
             ),
         }}
       />

@@ -18,6 +18,7 @@ import {
   setTmdbApiKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   CatalogNotice,
@@ -29,6 +30,7 @@ import { useColors } from "@/hooks/useColors";
 export default function ProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const {
     preferences,
     isReady,
@@ -92,6 +94,24 @@ export default function ProfileScreen() {
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Torna indietro"
+        onPress={() => {
+          if (router.canGoBack()) router.back();
+          else router.replace("/");
+        }}
+        style={({ pressed }) => [
+          styles.backButton,
+          { borderColor: colors.border, opacity: pressed ? 0.65 : 1 },
+        ]}
+      >
+        <Feather name="arrow-left" size={16} color={colors.foreground} />
+        <Text style={[styles.backText, { color: colors.foreground }]}>
+          Indietro
+        </Text>
+      </Pressable>
+
       <Text style={[styles.eyebrow, { color: colors.primary }]}>IL TUO PROFILO</Text>
       <Text style={[styles.title, { color: colors.foreground }]}>I tuoi gusti.</Text>
       <Text style={[styles.description, { color: colors.mutedForeground }]}>
@@ -366,6 +386,17 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { paddingHorizontal: 20, gap: 18 },
   eyebrow: { marginTop: 6, fontSize: 11, fontFamily: "Inter_700Bold", letterSpacing: 2.4 },
+  backButton: {
+    alignSelf: "flex-start",
+    minHeight: 38,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  backText: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
   title: { marginTop: -7, fontSize: 32, letterSpacing: -1, fontFamily: "Inter_700Bold" },
   description: { marginTop: -10, marginBottom: 3, fontSize: 13, lineHeight: 20 },
   panel: { padding: 17, borderWidth: 1, borderRadius: 20, gap: 14 },

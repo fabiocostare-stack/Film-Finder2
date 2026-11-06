@@ -24,7 +24,9 @@ import type {
   GetMovieCreditsParams,
   GetMovieRecommendationsParams,
   HealthStatus,
+  InTheatersResponse,
   ListMovieProvidersParams,
+  ListMoviesInTheatersParams,
   MovieAvailabilityResponse,
   MovieCreditsBatchResponse,
   MovieCreditsResponse,
@@ -296,6 +298,91 @@ export function useListMovieProviders<TData = Awaited<ReturnType<typeof listMovi
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getListMovieProvidersQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListMoviesInTheatersUrl = (params?: ListMoviesInTheatersParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/movies/in-theaters?${stringifiedParams}` : `/api/movies/in-theaters`
+}
+
+/**
+ * Returns theatrical releases already showing in the region plus the next releases, ordered by popularity and release date.
+ * @summary Movies currently in cinemas and upcoming releases in a region
+ */
+export const listMoviesInTheaters = async (params?: ListMoviesInTheatersParams, options?: Parameters<typeof customFetch>[1]): Promise<InTheatersResponse> => {
+
+  return customFetch<InTheatersResponse>(getListMoviesInTheatersUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListMoviesInTheatersQueryKey = (params?: ListMoviesInTheatersParams,) => {
+    return [
+    `/api/movies/in-theaters`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListMoviesInTheatersQueryOptions = <TData = Awaited<ReturnType<typeof listMoviesInTheaters>>, TError = ErrorType<MovieErrorResponse>>(params?: ListMoviesInTheatersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMoviesInTheaters>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMoviesInTheatersQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMoviesInTheaters>>> = ({ signal }) => listMoviesInTheaters(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMoviesInTheaters>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListMoviesInTheatersQueryResult = NonNullable<Awaited<ReturnType<typeof listMoviesInTheaters>>>
+export type ListMoviesInTheatersQueryError = ErrorType<MovieErrorResponse>
+
+
+/**
+ * @summary Movies currently in cinemas and upcoming releases in a region
+ */
+
+export function useListMoviesInTheaters<TData = Awaited<ReturnType<typeof listMoviesInTheaters>>, TError = ErrorType<MovieErrorResponse>>(
+ params?: ListMoviesInTheatersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMoviesInTheaters>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListMoviesInTheatersQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

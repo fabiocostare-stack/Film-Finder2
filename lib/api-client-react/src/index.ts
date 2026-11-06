@@ -4,6 +4,7 @@ export { setBaseUrl, setAuthTokenGetter } from "./custom-fetch";
 export {
   setTmdbApiKey,
   getTmdbApiKey,
+  inferGenres,
   loadDirectorFilmography,
   loadMoviesOnProviders,
   loadMoviesAvailableInRegion,

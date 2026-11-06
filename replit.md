@@ -37,6 +37,9 @@ App mobile in italiano per ricevere consigli di film basati sui propri gusti e s
 
 - Search a large movie catalog, mark films as watched, keep a watchlist, describe viewing preferences, select Italian streaming providers, and see verified availability for each film.
 - Recommendations use watched-film genres, free-text taste keywords, selected providers, and a persistent exclusion history to rotate suggestions.
+- The app has four tabs: "Registi" (director search + directors for you), "Titoli" (film search + your film feed), "In sala" (theatrical and upcoming releases), "Lista" (watchlist and watched films). Each tab owns its search bar instead of a shared "Cerca" tab.
+- The "In sala" tab lists films showing in Italian cinemas right now plus upcoming releases (`/movies/in-theaters`, backed by TMDB `now_playing`/`upcoming` for region IT), ranked by taste closeness and weighted rating.
+- The profile (taste, providers, TMDB key) is reached from the icon in the top-right corner of every tab, not from the bottom bar.
 
 ## User preferences
 

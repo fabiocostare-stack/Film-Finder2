@@ -98,6 +98,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MovieErrorResponse"
+  /movies/in-theaters:
+    get:
+      operationId: listMoviesInTheaters
+      tags: [movies]
+      summary: Movies currently in cinemas and upcoming releases in a region
+      description: Returns theatrical releases already showing in the region plus the next releases, ordered by popularity and release date.
+      parameters:
+        - name: region
+          in: query
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 2
+            default: IT
+      responses:
+        "200":
+          description: Theatrical and upcoming releases
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InTheatersResponse"
+        "400":
+          description: Invalid region
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MovieErrorResponse"
+        "503":
+          description: Movie catalog is not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MovieErrorResponse"
   /movies/recommendations:
     get:
       operationId: getMovieRecommendations
@@ -417,6 +450,9 @@ components:
           type: string
         voteAverage:
           type: number
+        voteCount:
+          type: integer
+          description: Number of TMDB ratings, used to weight how reliable voteAverage is.
         genreIds:
           type: array
           items:
@@ -559,6 +595,25 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DirectorRecommendation"
+    InTheatersResponse:
+      type: object
+      required:
+        - region
+        - nowPlaying
+        - upcoming
+      properties:
+        region:
+          type: string
+        nowPlaying:
+          type: array
+          description: Films currently showing in the region's cinemas, most popular first.
+          items:
+            $ref: "#/components/schemas/Movie"
+        upcoming:
+          type: array
+          description: Next theatrical releases in the region, soonest first.
+          items:
+            $ref: "#/components/schemas/Movie"
     DirectorSearchResult:
       type: object
       required:
