@@ -35,6 +35,10 @@ function NativeTabLayout() {
         <NativeTabs.Trigger.Icon sf="magnifyingglass" />
         <NativeTabs.Trigger.Label>Cerca</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="travel">
+        <NativeTabs.Trigger.Icon sf="globe" />
+        <NativeTabs.Trigger.Label>Viaggi</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="library">
         <NativeTabs.Trigger.Icon
           sf={{ default: "bookmark", selected: "bookmark.fill" }}
@@ -119,6 +123,18 @@ function ClassicTabLayout() {
               <SymbolView name="magnifyingglass" tintColor={color} size={22} />
             ) : (
               <Feather name="search" size={21} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="travel"
+        options={{
+          title: "Viaggi",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="globe" tintColor={color} size={22} />
+            ) : (
+              <Feather name="globe" size={21} color={color} />
             ),
         }}
       />
