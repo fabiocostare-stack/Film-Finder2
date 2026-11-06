@@ -2,10 +2,7 @@ import type {
   DirectorDiscoveriesResponse,
   DirectorProfile,
   DirectorRecommendation,
-  DirectorSearchResponse,
-  DirectorSearchResult,
   HealthStatus,
-  InTheatersResponse,
   Movie,
   MovieAvailabilityResponse,
   MovieCreditsBatchResponse,
@@ -117,27 +114,6 @@ type TmdbPersonMovieCredits = {
   crew?: Array<TmdbMovie & { job?: string }>;
 };
 
-type TmdbPersonSearchItem = {
-  id: number;
-  name?: string;
-  profile_path?: string | null;
-  known_for_department?: string;
-  popularity?: number;
-  known_for?: Array<{
-    media_type?: string;
-    title?: string;
-    name?: string;
-    original_title?: string;
-  }>;
-};
-
-type TmdbPersonSearchList = {
-  results?: TmdbPersonSearchItem[];
-  page?: number;
-  total_pages?: number;
-  total_results?: number;
-};
-
 type TmdbList<T> = {
   results?: T[];
   page?: number;
@@ -154,6 +130,8 @@ type TmdbAvailability = {
       flatrate?: TmdbProvider[];
       free?: TmdbProvider[];
       ads?: TmdbProvider[];
+      rent?: TmdbProvider[];
+      buy?: TmdbProvider[];
     }
   >;
 };
@@ -168,7 +146,6 @@ function mapMovie(movie: TmdbMovie): Movie {
     backdropPath: movie.backdrop_path ?? null,
     releaseDate: movie.release_date ?? "",
     voteAverage: movie.vote_average ?? 0,
-    voteCount: movie.vote_count ?? 0,
     genreIds: movie.genre_ids ?? [],
     originalLanguage: movie.original_language ?? "",
   };
@@ -180,29 +157,6 @@ function mapProvider(provider: TmdbProvider): MovieProvider {
     name: provider.provider_name,
     logoPath: provider.logo_path ?? null,
     displayPriority: provider.display_priority ?? 999,
-  };
-}
-
-function isDirectingPerson(person: TmdbPersonSearchItem): boolean {
-  return person.known_for_department === "Directing";
-}
-
-function mapDirectorSearchResult(
-  person: TmdbPersonSearchItem,
-): DirectorSearchResult {
-  const knownFor = [
-    ...new Set(
-      (person.known_for ?? [])
-        .filter((item) => item.media_type === "movie")
-        .map((item) => (item.title ?? item.original_title ?? "").trim())
-        .filter((title) => title.length > 0),
-    ),
-  ].slice(0, 3);
-  return {
-    id: person.id,
-    name: person.name?.trim() || `Regista #${person.id}`,
-    profilePath: person.profile_path ?? null,
-    knownFor,
   };
 }
 
@@ -218,46 +172,6 @@ function rotateItems<T>(items: readonly T[], offset: number): T[] {
   if (items.length === 0) return [];
   const start = offset % items.length;
   return [...items.slice(start), ...items.slice(0, start)];
-}
-
-function uniqueMovies(movies?: TmdbMovie[]): TmdbMovie[] {
-  const byId = new Map<number, TmdbMovie>();
-  for (const movie of movies ?? []) {
-    if (!movie?.id || !movie.title?.trim()) continue;
-    byId.set(movie.id, movie);
-  }
-  return [...byId.values()];
-}
-
-function todayIsoDate(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-async function loadInTheaters(region: string): Promise<InTheatersResponse> {
-  const [nowPlayingPayload, upcomingPayload] = await Promise.all([
-    getTmdb<TmdbList<TmdbMovie>>(
-      "/movie/now_playing",
-      { language: "it-IT", region, page: 1 },
-      60 * 60 * 1000,
-    ),
-    getTmdb<TmdbList<TmdbMovie>>(
-      "/movie/upcoming",
-      { language: "it-IT", region, page: 1 },
-      60 * 60 * 1000,
-    ),
-  ]);
-
-  const nowPlaying = uniqueMovies(nowPlayingPayload.results)
-    .slice(0, 18)
-    .map(mapMovie);
-  const today = todayIsoDate();
-  const upcoming = uniqueMovies(upcomingPayload.results)
-    .filter((movie) => (movie.release_date ?? "") >= today)
-    .sort((a, b) => (a.release_date ?? "").localeCompare(b.release_date ?? ""))
-    .slice(0, 15)
-    .map(mapMovie);
-
-  return { region, nowPlaying, upcoming };
 }
 
 const genreTerms: Record<number, string[]> = {
@@ -281,12 +195,7 @@ const genreTerms: Record<number, string[]> = {
   10752: ["guerra", "bellico", "war"],
 };
 
-/**
- * Maps a free-text taste description to TMDB genre ids using Italian/English
- * synonyms. Exported so the app can rank its own lists with the same vocabulary
- * the recommendation endpoints use.
- */
-export function inferGenres(taste?: string): number[] {
+function inferGenres(taste?: string): number[] {
   if (!taste) return [];
   const normalized = taste.toLocaleLowerCase("it-IT");
   return Object.entries(genreTerms)
@@ -968,6 +877,96 @@ export async function loadMoviesOnProviders(
   return available;
 }
 
+export async function loadMoviesAvailableInRegion(
+  movieIds: number[],
+  region = "IT",
+): Promise<number[]> {
+  const available: number[] = [];
+  for (let offset = 0; offset < movieIds.length; offset += 6) {
+    const batch = movieIds.slice(offset, offset + 6);
+    const responses = await Promise.allSettled(
+      batch.map((movieId) =>
+        getTmdb<TmdbAvailability>(
+          `/movie/${movieId}/watch/providers`,
+          {},
+          6 * 60 * 60 * 1000,
+        ),
+      ),
+    );
+    responses.forEach((response, index) => {
+      if (response.status !== "fulfilled") return;
+      const info = response.value.results?.[region];
+      const anywhere = [
+        ...(info?.flatrate ?? []),
+        ...(info?.free ?? []),
+        ...(info?.ads ?? []),
+        ...(info?.rent ?? []),
+        ...(info?.buy ?? []),
+      ];
+      if (anywhere.length > 0) available.push(batch[index]);
+    });
+  }
+  return available;
+}
+
+export async function resolveMoviesByTitle(
+  items: Array<{ title: string; year: number }>,
+): Promise<Array<Movie | null>> {
+  const resolveOne = async (item: {
+    title: string;
+    year: number;
+  }): Promise<Movie | null> => {
+    // Solo film con un voto discreto e abbastanza conosciuti.
+    const isWellKnown = (movie: TmdbMovie) =>
+      (movie.vote_average ?? 0) >= 6.4 && (movie.vote_count ?? 0) >= 150;
+    const yearOf = (movie: TmdbMovie) =>
+      Number((movie.release_date ?? "").slice(0, 4)) || 0;
+    const pick = (results: TmdbMovie[]): TmdbMovie | null => {
+      const close = results.filter(
+        (movie) => Math.abs(yearOf(movie) - item.year) <= 1,
+      );
+      close.sort(
+        (a, b) =>
+          Math.abs(yearOf(a) - item.year) - Math.abs(yearOf(b) - item.year) ||
+          (b.vote_count ?? 0) - (a.vote_count ?? 0),
+      );
+      return close[0] ?? null;
+    };
+    const base = {
+      query: item.title,
+      language: "it-IT",
+      include_adult: "false",
+    };
+    try {
+      const withYear = await getTmdb<TmdbList<TmdbMovie>>(
+        "/search/movie",
+        { ...base, primary_release_year: item.year },
+        24 * 60 * 60 * 1000,
+      );
+      const exact = pick(withYear.results ?? []);
+      if (exact) return isWellKnown(exact) ? mapMovie(exact) : null;
+      const anyYear = await getTmdb<TmdbList<TmdbMovie>>(
+        "/search/movie",
+        base,
+        24 * 60 * 60 * 1000,
+      );
+      const loose = pick(anyYear.results ?? []);
+      return loose && isWellKnown(loose) ? mapMovie(loose) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const results: Array<Movie | null> = [];
+  for (let offset = 0; offset < items.length; offset += 6) {
+    const batch = await Promise.all(
+      items.slice(offset, offset + 6).map(resolveOne),
+    );
+    results.push(...batch);
+  }
+  return results;
+}
+
 export async function loadMovieCredits(
   movieId: number,
 ): Promise<MovieCreditsResponse> {
@@ -1045,18 +1044,6 @@ export async function handleClientApiRequest(
       );
     const result: MovieProviderListResponse = { region, results };
     return result;
-  }
-
-  if (path === "/api/movies/in-theaters") {
-    const region = (searchParams.get("region") ?? "IT").toUpperCase();
-    if (!/^[A-Z]{2}$/.test(region)) {
-      throw new ClientMovieError(
-        400,
-        "invalid_region",
-        "La regione indicata non è valida.",
-      );
-    }
-    return loadInTheaters(region);
   }
 
   if (path === "/api/movies/recommendations") {
@@ -1269,36 +1256,6 @@ export async function handleClientApiRequest(
       page: pageNumber,
       totalPages,
       totalResults,
-    };
-    return response;
-  }
-
-  if (path === "/api/movies/director-search") {
-    const query = searchParams.get("query")?.trim() ?? "";
-    if (query.length < 2) {
-      throw new ClientMovieError(
-        400,
-        "invalid_director_search",
-        "Scrivi almeno due lettere per cercare un regista.",
-      );
-    }
-    const requestedLimit = Number(searchParams.get("limit"));
-    const limit = Number.isFinite(requestedLimit) && requestedLimit > 0
-      ? Math.min(requestedLimit, 20)
-      : 8;
-    const payload = await getTmdb<TmdbPersonSearchList>(
-      "/search/person",
-      { query, language: "it-IT", include_adult: "false", page: 1 },
-      60 * 60 * 1000,
-    );
-    // TMDB people search returns actors and crew too; keep only people whose
-    // primary department is Directing so the suggestions stay a directors list.
-    const directors = (payload.results ?? [])
-      .filter(isDirectingPerson)
-      .map(mapDirectorSearchResult);
-    const response: DirectorSearchResponse = {
-      results: directors.slice(0, limit),
-      totalResults: directors.length,
     };
     return response;
   }
