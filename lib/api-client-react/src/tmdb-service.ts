@@ -1029,6 +1029,50 @@ export async function handleClientApiRequest(
     return parseListResponse(payload);
   }
 
+  if (path === "/api/movies/director-search") {
+    const query = searchParams.get("query")?.trim() ?? "";
+    if (query.length < 2) {
+      throw new ClientMovieError(
+        400,
+        "invalid_director_search",
+        "Scrivi almeno due lettere per cercare un regista.",
+      );
+    }
+    const limit = searchParams.has("limit")
+      ? Math.max(1, Math.min(20, Number(searchParams.get("limit")) || 8))
+      : 8;
+    const payload = await getTmdb<{
+      results?: Array<{
+        id: number;
+        name?: string;
+        profile_path?: string | null;
+        known_for_department?: string;
+        known_for?: Array<{ title?: string; name?: string; media_type?: string }>;
+      }>;
+    }>(
+      "/search/person",
+      { query, language: "it-IT", include_adult: "false", page: 1 },
+      60 * 60 * 1000,
+    );
+    const directors = (payload.results ?? [])
+      .filter(
+        (person) => person.known_for_department === "Directing" && person.name,
+      )
+      .map((person) => ({
+        id: person.id,
+        name: person.name ?? "",
+        profilePath: person.profile_path ?? null,
+        knownFor: (person.known_for ?? [])
+          .filter((item) => item.media_type === "movie" && item.title)
+          .slice(0, 3)
+          .map((item) => item.title as string),
+      }));
+    return {
+      results: directors.slice(0, limit),
+      totalResults: directors.length,
+    };
+  }
+
   if (path === "/api/movies/providers") {
     const region = (searchParams.get("region") ?? "IT").toUpperCase();
     const payload = await getTmdb<{ results?: TmdbProvider[] }>(
@@ -1504,31 +1548,4 @@ export async function loadInTheaters(region = "IT"): Promise<InTheaters> {
     .filter((movie) => !nowIds.has(movie.id) && movie.releaseDate >= today)
     .sort((a, b) => a.releaseDate.localeCompare(b.releaseDate));
   return { nowPlaying, upcoming };
-}
-
-export async function searchDirectors(query: string): Promise<DirectorProfile[]> {
-  const trimmed = query.trim();
-  if (trimmed.length < 2) return [];
-  const response = await getTmdb<{
-    results?: Array<{
-      id: number;
-      name?: string;
-      profile_path?: string | null;
-      known_for_department?: string;
-      popularity?: number;
-    }>;
-  }>(
-    "/search/person",
-    { language: "it-IT", query: trimmed, include_adult: "false", page: 1 },
-    10 * 60 * 1000,
-  );
-  return (response.results ?? [])
-    .filter((person) => person.known_for_department === "Directing" && person.name)
-    .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0))
-    .slice(0, 15)
-    .map((person) => ({
-      id: person.id,
-      name: person.name ?? "",
-      profilePath: person.profile_path ?? null,
-    }));
 }
