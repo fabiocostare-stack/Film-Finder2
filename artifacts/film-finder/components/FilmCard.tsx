@@ -114,8 +114,16 @@ export function FilmCard({
             </Text>
           </View>
         </View>
+        {releaseLabel ? (
+          <View style={styles.releaseLine}>
+            <Feather name="calendar" size={12} color={colors.primary} />
+            <Text style={[styles.releaseText, { color: colors.primary }]}>
+              {releaseLabel}
+            </Text>
+          </View>
+        ) : null}
         <Text style={[styles.meta, { color: colors.mutedForeground }]}>
-          {releaseLabel ?? yearOf(movie.releaseDate)}
+          {yearOf(movie.releaseDate)}
           {movie.originalLanguage
             ? ` · ${movie.originalLanguage.toUpperCase()}`
             : ""}
@@ -356,6 +364,13 @@ const styles = StyleSheet.create({
   },
   rating: { flexDirection: "row", alignItems: "center", gap: 3, paddingTop: 2 },
   ratingText: { fontSize: 10, fontFamily: "Inter_600SemiBold" },
+  releaseLine: {
+    marginTop: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  releaseText: { fontSize: 12, fontFamily: "Inter_700Bold", letterSpacing: 0.2 },
   meta: { marginTop: 5, fontSize: 9, letterSpacing: 0.4 },
   credits: { marginTop: 8, gap: 5 },
   creditRow: { flexDirection: "row", alignItems: "flex-start", gap: 6 },
