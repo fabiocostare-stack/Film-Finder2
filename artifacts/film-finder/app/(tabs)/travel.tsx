@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Platform,
   Pressable,
@@ -22,9 +22,37 @@ export default function TravelScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState<TravelCountry | null>(null);
+  const scrollRef = useRef<ScrollView>(null);
+  const scrollY = useRef(0);
+  const savedY = useRef(0);
+
+  const openCountry = (country: TravelCountry) => {
+    savedY.current = scrollY.current;
+    setSelected(country);
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  };
+
+  // Tornando all'elenco, riporta la vista al punto in cui eri
+  useEffect(() => {
+    if (selected !== null) return;
+    const y = savedY.current;
+    if (y <= 0) return;
+    const timers = [0, 60, 200].map((delay) =>
+      setTimeout(
+        () => scrollRef.current?.scrollTo({ y, animated: false }),
+        delay,
+      ),
+    );
+    return () => timers.forEach(clearTimeout);
+  }, [selected]);
 
   return (
     <ScrollView
+      ref={scrollRef}
+      onScroll={(event) => {
+        scrollY.current = event.nativeEvent.contentOffset.y;
+      }}
+      scrollEventThrottle={16}
       style={[styles.screen, { backgroundColor: colors.background }]}
       contentContainerStyle={[
         styles.content,
@@ -61,7 +89,7 @@ export default function TravelScreen() {
                 testID={`open-country-${country.id}`}
                 accessibilityRole="button"
                 accessibilityLabel={`Apri ${country.name}`}
-                onPress={() => setSelected(country)}
+                onPress={() => openCountry(country)}
                 style={({ pressed }) => [
                   styles.card,
                   {
