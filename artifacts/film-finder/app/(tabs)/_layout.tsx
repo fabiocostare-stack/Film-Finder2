@@ -35,9 +35,9 @@ function NativeTabLayout() {
         <NativeTabs.Trigger.Icon sf="film" />
         <NativeTabs.Trigger.Label>In Sala</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="search" role="search">
+      <NativeTabs.Trigger name="titoli">
         <NativeTabs.Trigger.Icon sf="magnifyingglass" />
-        <NativeTabs.Trigger.Label>Cerca</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>Titoli</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="travel">
         <NativeTabs.Trigger.Icon sf="globe" />
@@ -48,15 +48,6 @@ function NativeTabLayout() {
           sf={{ default: "bookmark", selected: "bookmark.fill" }}
         />
         <NativeTabs.Trigger.Label>Lista</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="profile">
-        <NativeTabs.Trigger.Icon
-          sf={{
-            default: "slider.horizontal.3",
-            selected: "slider.horizontal.3",
-          }}
-        />
-        <NativeTabs.Trigger.Label>Profilo</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -119,9 +110,9 @@ function ClassicTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="search"
+        name="titoli"
         options={{
-          title: "Cerca",
+          title: "Titoli",
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="magnifyingglass" tintColor={color} size={22} />
@@ -163,22 +154,6 @@ function ClassicTabLayout() {
               <SymbolView name="bookmark" tintColor={color} size={22} />
             ) : (
               <Feather name="bookmark" size={21} color={color} />
-            ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profilo",
-          tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView
-                name="slider.horizontal.3"
-                tintColor={color}
-                size={22}
-              />
-            ) : (
-              <Feather name="sliders" size={21} color={color} />
             ),
         }}
       />
