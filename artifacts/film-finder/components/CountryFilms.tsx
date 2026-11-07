@@ -51,6 +51,7 @@ export function CountryFilms({ country, onBack }: CountryFilmsProps) {
   const { preferences, toggleWatchedMovie, toggleSavedMovie } =
     usePreferences();
   const [onlyAvailable, setOnlyAvailable] = useState(false);
+  const [collapsed, setCollapsed] = useState<Set<number>>(() => new Set());
 
   const resolved = useQuery({
     queryKey: ["travel-country-v2", country.id],
@@ -107,6 +108,20 @@ export function CountryFilms({ country, onBack }: CountryFilmsProps) {
     return allItems.filter((item) => ids.has(item.movie.id));
   }, [allItems, availability.data, onlyAvailable]);
 
+  const allCollapsed =
+    items.length > 0 && items.every((item) => collapsed.has(item.movie.id));
+  const toggleCollapsed = (movieId: number) =>
+    setCollapsed((current) => {
+      const next = new Set(current);
+      if (next.has(movieId)) next.delete(movieId);
+      else next.add(movieId);
+      return next;
+    });
+  const toggleAll = () =>
+    setCollapsed(
+      allCollapsed ? new Set() : new Set(items.map((item) => item.movie.id)),
+    );
+
   const movieCredits = useMovieCredits(items.map((item) => item.movie.id));
   const watchedIds = useMemo(
     () => new Set(preferences.watchedMovies.map((movie) => movie.id)),
@@ -154,6 +169,7 @@ export function CountryFilms({ country, onBack }: CountryFilmsProps) {
         </View>
       </View>
 
+      <View style={styles.controls}>
       <Pressable
         accessibilityRole="checkbox"
         accessibilityState={{ checked: onlyAvailable }}
@@ -182,6 +198,30 @@ export function CountryFilms({ country, onBack }: CountryFilmsProps) {
           Disponibili per me
         </Text>
       </Pressable>
+      {items.length > 1 ? (
+        <Pressable
+          testID="travel-toggle-all"
+          accessibilityRole="button"
+          accessibilityLabel={
+            allCollapsed ? "Espandi tutti i film" : "Comprimi tutti i film"
+          }
+          onPress={toggleAll}
+          style={({ pressed }) => [
+            styles.chip,
+            { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
+          ]}
+        >
+          <Feather
+            name={allCollapsed ? "chevrons-down" : "chevrons-up"}
+            size={14}
+            color={colors.mutedForeground}
+          />
+          <Text style={[styles.chipText, { color: colors.foreground }]}>
+            {allCollapsed ? "Espandi tutto" : "Comprimi tutto"}
+          </Text>
+        </Pressable>
+      ) : null}
+      </View>
 
       {resolved.isLoading ? (
         <View style={[styles.statusPanel, { borderColor: colors.border }]}>
@@ -222,13 +262,63 @@ export function CountryFilms({ country, onBack }: CountryFilmsProps) {
         </View>
       ) : (
         <View style={styles.list}>
-          {items.map(({ film, movie }) => (
+          {items.map(({ film, movie }) =>
+            collapsed.has(movie.id) ? (
+              <Pressable
+                key={movie.id}
+                testID={`travel-expand-${movie.id}`}
+                accessibilityRole="button"
+                accessibilityLabel={`Espandi ${movie.title}`}
+                onPress={() => toggleCollapsed(movie.id)}
+                style={({ pressed }) => [
+                  styles.collapsedRow,
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: colors.border,
+                    opacity: pressed ? 0.7 : 1,
+                  },
+                ]}
+              >
+                <Feather
+                  name="chevron-down"
+                  size={16}
+                  color={colors.mutedForeground}
+                />
+                <Text
+                  numberOfLines={1}
+                  style={[styles.collapsedTitle, { color: colors.foreground }]}
+                >
+                  {movie.title}
+                </Text>
+                <Text
+                  style={[styles.collapsedMeta, { color: colors.mutedForeground }]}
+                >
+                  {movie.releaseDate?.slice(0, 4) ?? ""}
+                  {movie.voteAverage > 0
+                    ? ` · ★ ${movie.voteAverage.toFixed(1)}`
+                    : ""}
+                </Text>
+              </Pressable>
+            ) : (
             <View key={movie.id} style={styles.entry}>
               <View style={styles.noteRow}>
                 <Feather name="map-pin" size={13} color={colors.primary} />
                 <Text style={[styles.note, { color: colors.foreground }]}>
                   {film.note}
                 </Text>
+                <Pressable
+                  testID={`travel-collapse-${movie.id}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Comprimi ${movie.title}`}
+                  hitSlop={10}
+                  onPress={() => toggleCollapsed(movie.id)}
+                >
+                  <Feather
+                    name="chevron-up"
+                    size={18}
+                    color={colors.mutedForeground}
+                  />
+                </Pressable>
               </View>
               <Text style={[styles.tags, { color: colors.mutedForeground }]}>
                 {KIND_LABEL[film.kind]} · {VIEW_LABEL[film.view]}
@@ -246,7 +336,8 @@ export function CountryFilms({ country, onBack }: CountryFilmsProps) {
                 onToggleSave={toggleSavedMovie}
               />
             </View>
-          ))}
+            ),
+          )}
         </View>
       )}
     </View>
@@ -282,6 +373,18 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   chipText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
+  controls: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  collapsedRow: {
+    minHeight: 46,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderRadius: 14,
+  },
+  collapsedTitle: { flex: 1, fontSize: 14, fontFamily: "Inter_600SemiBold" },
+  collapsedMeta: { fontSize: 11 },
   list: { gap: 18 },
   entry: { gap: 6 },
   noteRow: { flexDirection: "row", alignItems: "flex-start", gap: 7 },
