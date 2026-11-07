@@ -1505,3 +1505,30 @@ export async function loadInTheaters(region = "IT"): Promise<InTheaters> {
     .sort((a, b) => a.releaseDate.localeCompare(b.releaseDate));
   return { nowPlaying, upcoming };
 }
+
+export async function searchDirectors(query: string): Promise<DirectorProfile[]> {
+  const trimmed = query.trim();
+  if (trimmed.length < 2) return [];
+  const response = await getTmdb<{
+    results?: Array<{
+      id: number;
+      name?: string;
+      profile_path?: string | null;
+      known_for_department?: string;
+      popularity?: number;
+    }>;
+  }>(
+    "/search/person",
+    { language: "it-IT", query: trimmed, include_adult: "false", page: 1 },
+    10 * 60 * 1000,
+  );
+  return (response.results ?? [])
+    .filter((person) => person.known_for_department === "Directing" && person.name)
+    .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0))
+    .slice(0, 15)
+    .map((person) => ({
+      id: person.id,
+      name: person.name ?? "",
+      profilePath: person.profile_path ?? null,
+    }));
+}
