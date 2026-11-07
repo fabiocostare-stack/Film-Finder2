@@ -17,6 +17,7 @@ import {
 
 const REGIONS = [...new Set(TRAVEL_COUNTRIES.map((country) => country.region))];
 import { useColors } from "@/hooks/useColors";
+import { getTravelCount } from "@/lib/travelCounts";
 
 export default function TravelScreen() {
   const colors = useColors();
@@ -110,7 +111,12 @@ export default function TravelScreen() {
                     {country.tagline}
                   </Text>
                   <Text style={[styles.cardCount, { color: colors.primary }]}>
-                    Selezione di {country.films.length} film
+                    {(() => {
+                      const known = getTravelCount(country.id);
+                      return known !== undefined
+                        ? `${known} film disponibili in Italia`
+                        : `Fino a ${country.films.length} film`;
+                    })()}
                   </Text>
                 </View>
                 <Feather
