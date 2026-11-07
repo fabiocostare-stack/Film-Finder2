@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import type { DirectorProfile } from "@workspace/api-client-react";
+import { DirectorDetail } from "@/components/DirectorDetail";
 import { DirectorDiscovery } from "@/components/DirectorDiscovery";
 import { DirectorSearch } from "@/components/DirectorSearch";
 import { ProfileShortcut } from "@/components/ProfileShortcut";
@@ -9,6 +12,8 @@ import { useColors } from "@/hooks/useColors";
 export default function DirectorsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const [selectedDirector, setSelectedDirector] =
+    useState<DirectorProfile | null>(null);
   const paddingTop = Platform.OS === "web" ? 67 : insets.top + 10;
   const paddingBottom = Platform.OS === "web" ? 110 : 36;
 
@@ -19,6 +24,13 @@ export default function DirectorsScreen() {
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
+      {selectedDirector ? (
+        <DirectorDetail
+          director={selectedDirector}
+          onBack={() => setSelectedDirector(null)}
+        />
+      ) : (
+        <>
       <View style={styles.topline}>
         <View style={styles.topCopy}>
           <Text style={[styles.eyebrow, { color: colors.primary }]}>
@@ -44,14 +56,16 @@ export default function DirectorsScreen() {
         servizi che hai.
       </Text>
 
-      <DirectorSearch />
+      <DirectorSearch onSelect={setSelectedDirector} />
 
-      <DirectorDiscovery />
+      <DirectorDiscovery onOpenDirector={setSelectedDirector} />
 
       <Text style={[styles.footer, { color: colors.mutedForeground }]}>
         I film proposti sono inediti e disponibili sulle piattaforme che hai
         selezionato.
       </Text>
+        </>
+      )}
     </ScrollView>
   );
 }
