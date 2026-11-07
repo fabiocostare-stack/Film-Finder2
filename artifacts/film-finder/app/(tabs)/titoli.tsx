@@ -862,11 +862,13 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
+    minWidth: 0,
     minHeight: 48,
     fontSize: 15,
     fontFamily: "Inter_400Regular",
   },
   searchAction: {
+    flexShrink: 0,
     width: 42,
     height: 42,
     borderRadius: 13,
