@@ -9,7 +9,6 @@ import {
   View,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import {
   getSearchDirectorsQueryKey,
   useSearchDirectors,
@@ -27,9 +26,12 @@ function profileUri(profilePath: string | null): string | null {
   return profilePath ? `https://image.tmdb.org/t/p/w185${profilePath}` : null;
 }
 
-export function DirectorSearch() {
+type DirectorSearchProps = {
+  onSelect: (director: DirectorSearchResult) => void;
+};
+
+export function DirectorSearch({ onSelect }: DirectorSearchProps) {
   const colors = useColors();
-  const router = useRouter();
   const { preferences } = usePreferences();
   const [draft, setDraft] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -67,16 +69,7 @@ export function DirectorSearch() {
   const isSearching =
     (isTyping || search.isFetching) && debouncedQuery.length >= MIN_QUERY_LENGTH;
 
-  const openDirector = (director: DirectorSearchResult) => {
-    router.push({
-      pathname: "/director/[id]",
-      params: {
-        id: String(director.id),
-        name: director.name,
-        profilePath: director.profilePath ?? "",
-      },
-    });
-  };
+  const openDirector = (director: DirectorSearchResult) => onSelect(director);
 
   return (
     <View style={styles.container}>
