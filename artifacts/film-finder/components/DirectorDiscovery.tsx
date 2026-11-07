@@ -1,24 +1,20 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
 import {
   getGetDirectorDiscoveriesQueryKey,
-  searchDirectors,
   useGetDirectorDiscoveries,
   type DirectorProfile,
   type DirectorRecommendation,
   type GetDirectorDiscoveriesParams,
 } from "@workspace/api-client-react";
-import { DirectorDetail } from "@/components/DirectorDetail";
 import { FilmCard } from "@/components/FilmCard";
 import {
   CatalogNotice,
@@ -30,25 +26,13 @@ import { useMovieCredits } from "@/hooks/useMovieCredits";
 
 const DIRECTOR_STALE_TIME = 30 * 60 * 1000;
 
-export function DirectorDiscovery() {
+type DirectorDiscoveryProps = {
+  onOpenDirector: (director: DirectorProfile) => void;
+};
+
+export function DirectorDiscovery({ onOpenDirector }: DirectorDiscoveryProps) {
   const colors = useColors();
-  const [selectedDirector, setSelectedDirector] =
-    useState<DirectorProfile | null>(null);
   const [rotation, setRotation] = useState(0);
-  const [searchInput, setSearchInput] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  useEffect(() => {
-    const timer = setTimeout(() => setSearchTerm(searchInput.trim()), 400);
-    return () => clearTimeout(timer);
-  }, [searchInput]);
-  const directorSearch = useQuery({
-    queryKey: ["director-search-v1", searchTerm],
-    queryFn: () => searchDirectors(searchTerm),
-    enabled: searchTerm.length >= 2,
-    staleTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    retry: false,
-  });
   const {
     preferences,
     isReady,
@@ -111,7 +95,7 @@ export function DirectorDiscovery() {
   );
 
   const openDirector = (director: DirectorRecommendation["director"]) => {
-    setSelectedDirector(director);
+    onOpenDirector(director);
   };
 
   const renderDirector = (item: DirectorRecommendation) => {
@@ -219,171 +203,32 @@ export function DirectorDiscovery() {
     );
   };
 
-  if (selectedDirector) {
-    return (
-      <DirectorDetail
-        director={selectedDirector}
-        onBack={() => setSelectedDirector(null)}
-      />
-    );
-  }
-
-  const searching = searchInput.trim().length > 0;
-
-  const searchBox = (
-    <View
-      style={[
-        styles.searchBox,
-        { backgroundColor: colors.card, borderColor: colors.border },
-      ]}
-    >
-      <Feather name="search" size={17} color={colors.mutedForeground} />
-      <TextInput
-        testID="director-search-input"
-        value={searchInput}
-        onChangeText={setSearchInput}
-        placeholder="Cerca un regista per nome"
-        placeholderTextColor={colors.mutedForeground}
-        autoCapitalize="words"
-        autoCorrect={false}
-        returnKeyType="search"
-        accessibilityLabel="Cerca un regista per nome"
-        style={[styles.searchInput, { color: colors.foreground }]}
-      />
-      {searching ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Cancella la ricerca"
-          onPress={() => setSearchInput("")}
-          hitSlop={10}
-        >
-          <Feather name="x" size={17} color={colors.mutedForeground} />
-        </Pressable>
-      ) : null}
-    </View>
-  );
-
-  const searchResults = (
-    <View style={styles.directorList}>
-      {searchInput.trim().length < 2 ? (
-        <Text style={[styles.noMoviesText, { color: colors.mutedForeground }]}>
-          Scrivi almeno due lettere del nome.
-        </Text>
-      ) : directorSearch.isLoading || searchInput.trim() !== searchTerm ? (
-        <View style={[styles.loadingPanel, { borderColor: colors.border }]}>
-          <ActivityIndicator color={colors.primary} />
-        </View>
-      ) : directorSearch.isError ? (
-        <CatalogNotice
-          title="Ricerca non disponibile"
-          message={getCatalogErrorMessage(
-            directorSearch.error,
-            "Non è stato possibile cercare i registi. Verifica la connessione e riprova.",
-          )}
-          onRetry={() => void directorSearch.refetch()}
-        />
-      ) : (directorSearch.data ?? []).length === 0 ? (
-        <View style={[styles.noDiscoveries, { borderColor: colors.border }]}>
-          <Text
-            style={[styles.noMoviesText, { color: colors.mutedForeground }]}
-          >
-            Nessun regista trovato per “{searchTerm}”. Prova con un altro nome.
-          </Text>
-        </View>
-      ) : (
-        (directorSearch.data ?? []).map((director) => (
-          <Pressable
-            key={director.id}
-            accessibilityRole="button"
-            accessibilityLabel={`Apri la pagina di ${director.name}`}
-            onPress={() => openDirector(director)}
-            style={({ pressed }) => [
-              styles.resultRow,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
-                opacity: pressed ? 0.7 : 1,
-              },
-            ]}
-          >
-            {director.profilePath ? (
-              <Image
-                source={{
-                  uri: `https://image.tmdb.org/t/p/w185${director.profilePath}`,
-                }}
-                style={[styles.portrait, { backgroundColor: colors.secondary }]}
-                resizeMode="cover"
-              />
-            ) : (
-              <View
-                style={[
-                  styles.portrait,
-                  styles.portraitFallback,
-                  { backgroundColor: colors.secondary },
-                ]}
-              >
-                <Feather name="user" size={23} color={colors.mutedForeground} />
-              </View>
-            )}
-            <Text
-              numberOfLines={2}
-              style={[styles.directorName, { color: colors.foreground, flex: 1 }]}
-            >
-              {director.name}
-            </Text>
-            <Feather
-              name="chevron-right"
-              size={18}
-              color={colors.mutedForeground}
-            />
-          </Pressable>
-        ))
-      )}
-    </View>
-  );
-
-  if (searching) {
-    return (
-      <View style={styles.container}>
-        {searchBox}
-        {searchResults}
-      </View>
-    );
-  }
-
   if (!isReady || discoveries.isLoading) {
     return (
-      <View style={styles.container}>
-        {searchBox}
-        <View style={[styles.loadingPanel, { borderColor: colors.border }]}>
-          <ActivityIndicator color={colors.primary} />
-          <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
-            Cerchiamo i registi e i loro film sui tuoi servizi…
-          </Text>
-        </View>
+      <View style={[styles.loadingPanel, { borderColor: colors.border }]}>
+        <ActivityIndicator color={colors.primary} />
+        <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
+          Cerchiamo i registi e i loro film sui tuoi servizi…
+        </Text>
       </View>
     );
   }
 
   if (discoveries.isError) {
     return (
-      <View style={styles.container}>
-        {searchBox}
-        <CatalogNotice
-          title="Catalogo non disponibile"
-          message={getCatalogErrorMessage(
-            discoveries.error,
-            "Non è stato possibile caricare i registi. Verifica la connessione e riprova.",
-          )}
-          onRetry={() => void discoveries.refetch()}
-        />
-      </View>
+      <CatalogNotice
+        title="Catalogo non disponibile"
+        message={getCatalogErrorMessage(
+          discoveries.error,
+          "Non è stato possibile caricare i registi. Verifica la connessione e riprova.",
+        )}
+        onRetry={() => void discoveries.refetch()}
+      />
     );
   }
 
   return (
     <View style={styles.container}>
-      {searchBox}
       <View style={styles.sectionHeading}>
         <View>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
@@ -470,24 +315,6 @@ export function DirectorDiscovery() {
 
 const styles = StyleSheet.create({
   container: { gap: 18 },
-  searchBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    minHeight: 46,
-    borderWidth: 1,
-    borderRadius: 15,
-    paddingHorizontal: 14,
-  },
-  searchInput: { flex: 1, fontSize: 14, paddingVertical: 10 },
-  resultRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    borderWidth: 1,
-    borderRadius: 18,
-    padding: 11,
-  },
   sectionHeading: {
     flexDirection: "row",
     alignItems: "center",
