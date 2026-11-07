@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -26,6 +26,7 @@ import {
 import { usePreferences } from "@/context/PreferencesContext";
 import { useColors } from "@/hooks/useColors";
 import { useMovieCredits } from "@/hooks/useMovieCredits";
+import { setTravelCount } from "@/lib/travelCounts";
 
 type CountryFilmsProps = {
   country: TravelCountry;
@@ -75,6 +76,9 @@ export function CountryFilms({ country, onBack }: CountryFilmsProps) {
   });
 
   const allItems = useMemo(() => resolved.data ?? [], [resolved.data]);
+  useEffect(() => {
+    if (resolved.data) setTravelCount(country.id, resolved.data.length);
+  }, [country.id, resolved.data]);
   const providerIds = useMemo(
     () => preferences.selectedProviders.map((provider) => provider.id),
     [preferences.selectedProviders],
@@ -140,6 +144,13 @@ export function CountryFilms({ country, onBack }: CountryFilmsProps) {
           <Text style={[styles.tagline, { color: colors.mutedForeground }]}>
             {country.tagline}
           </Text>
+          {resolved.data ? (
+            <Text style={[styles.tagline, { color: colors.primary }]}>
+              {resolved.data.length === country.films.length
+                ? `${resolved.data.length} film disponibili in Italia`
+                : `${resolved.data.length} film disponibili in Italia su ${country.films.length} selezionati`}
+            </Text>
+          ) : null}
         </View>
       </View>
 
