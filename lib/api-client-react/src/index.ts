@@ -9,6 +9,7 @@ export {
   loadMoviesAvailableInRegion,
   resolveMoviesByTitle,
   loadInTheaters,
+  searchDirectors,
   inferGenres,
 } from "./tmdb-service";
 export type { DirectorFilmography, InTheaters } from "./tmdb-service";
