@@ -916,14 +916,18 @@ export async function resolveMoviesByTitle(
     title: string;
     year: number;
   }): Promise<Movie | null> => {
-    // Solo film con un voto discreto e abbastanza conosciuti.
-    const isWellKnown = (movie: TmdbMovie) =>
-      (movie.vote_average ?? 0) >= 6.4 && (movie.vote_count ?? 0) >= 150;
     const yearOf = (movie: TmdbMovie) =>
       Number((movie.release_date ?? "").slice(0, 4)) || 0;
-    const pick = (results: TmdbMovie[]): TmdbMovie | null => {
+    // I film sono scelti a mano: basta trovare quello giusto per titolo e anno
+    // (con un po' di tolleranza, perché l'anno di uscita varia tra festival e sale).
+    const pick = (
+      results: TmdbMovie[],
+      tolerance: number,
+    ): TmdbMovie | null => {
       const close = results.filter(
-        (movie) => Math.abs(yearOf(movie) - item.year) <= 1,
+        (movie) =>
+          Boolean(movie.release_date) &&
+          Math.abs(yearOf(movie) - item.year) <= tolerance,
       );
       close.sort(
         (a, b) =>
@@ -932,26 +936,25 @@ export async function resolveMoviesByTitle(
       );
       return close[0] ?? null;
     };
-    const base = {
-      query: item.title,
-      language: "it-IT",
-      include_adult: "false",
-    };
+    const search = (params: Record<string, string | number>) =>
+      getTmdb<TmdbList<TmdbMovie>>(
+        "/search/movie",
+        {
+          query: item.title,
+          language: "it-IT",
+          include_adult: "false",
+          ...params,
+        },
+        24 * 60 * 60 * 1000,
+      ).then((response) => response.results ?? []);
+
     try {
-      const withYear = await getTmdb<TmdbList<TmdbMovie>>(
-        "/search/movie",
-        { ...base, primary_release_year: item.year },
-        24 * 60 * 60 * 1000,
-      );
-      const exact = pick(withYear.results ?? []);
-      if (exact) return isWellKnown(exact) ? mapMovie(exact) : null;
-      const anyYear = await getTmdb<TmdbList<TmdbMovie>>(
-        "/search/movie",
-        base,
-        24 * 60 * 60 * 1000,
-      );
-      const loose = pick(anyYear.results ?? []);
-      return loose && isWellKnown(loose) ? mapMovie(loose) : null;
+      const withYear = pick(await search({ primary_release_year: item.year }), 1);
+      if (withYear) return mapMovie(withYear);
+      const sameYear = pick(await search({ year: item.year }), 1);
+      if (sameYear) return mapMovie(sameYear);
+      const anyYear = pick(await search({}), 2);
+      return anyYear ? mapMovie(anyYear) : null;
     } catch {
       return null;
     }
