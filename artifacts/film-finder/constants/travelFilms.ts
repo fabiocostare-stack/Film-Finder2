@@ -324,7 +324,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "india",
-    region: "Asia meridionale",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "India",
     flag: "🇮🇳",
     tagline: "Mumbai, Delhi, il Gange e i villaggi",
@@ -344,7 +344,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "pakistan",
-    region: "Asia meridionale",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Pakistan",
     flag: "🇵🇰",
     tagline: "Lahore, Karachi e le montagne del nord",
@@ -358,7 +358,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "sri-lanka",
-    region: "Asia meridionale",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Sri Lanka",
     flag: "🇱🇰",
     tagline: "Colombo, le colline del tè e la costa",
@@ -370,7 +370,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "bangladesh",
-    region: "Asia meridionale",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Bangladesh",
     flag: "🇧🇩",
     tagline: "Dhaka, i villaggi e il Golfo del Bengala",
@@ -383,7 +383,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "nepal",
-    region: "Asia meridionale",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Nepal",
     flag: "🇳🇵",
     tagline: "L'Himalaya, Kathmandu e le valli",
@@ -395,7 +395,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "bhutan",
-    region: "Asia meridionale",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Bhutan",
     flag: "🇧🇹",
     tagline: "Villaggi di montagna e monasteri",
@@ -407,7 +407,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "afghanistan",
-    region: "Asia meridionale",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Afghanistan",
     flag: "🇦🇫",
     tagline: "Kabul e il deserto di Kandahar",
@@ -420,7 +420,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "kazakistan",
-    region: "Asia centrale",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Kazakistan",
     flag: "🇰🇿",
     tagline: "La steppa, le yurte e i villaggi",
@@ -432,7 +432,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "kirghizistan",
-    region: "Asia centrale",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Kirghizistan",
     flag: "🇰🇬",
     tagline: "Valli, cavalli e villaggi di montagna",
@@ -445,7 +445,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "tagikistan",
-    region: "Asia centrale",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Tagikistan",
     flag: "🇹🇯",
     tagline: "Un villaggio di montagna e le strade del paese",
@@ -455,7 +455,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "iran",
-    region: "Medio Oriente",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Iran",
     flag: "🇮🇷",
     tagline: "Teheran, i villaggi e le colline",
@@ -472,7 +472,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "turchia",
-    region: "Medio Oriente",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Turchia",
     flag: "🇹🇷",
     tagline: "Istanbul, l'Anatolia e il Mar Nero",
@@ -488,7 +488,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "israele",
-    region: "Medio Oriente",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Israele",
     flag: "🇮🇱",
     tagline: "Tel Aviv, Gerusalemme e il deserto",
@@ -504,7 +504,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "palestina",
-    region: "Medio Oriente",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Palestina",
     flag: "🇵🇸",
     tagline: "Nazareth, la Cisgiordania e i villaggi",
@@ -518,7 +518,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "libano",
-    region: "Medio Oriente",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Libano",
     flag: "🇱🇧",
     tagline: "Beirut, i villaggi e le montagne",
@@ -532,7 +532,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "giordania",
-    region: "Medio Oriente",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Giordania",
     flag: "🇯🇴",
     tagline: "Amman e il deserto del Wadi Rum",
@@ -545,7 +545,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "siria",
-    region: "Medio Oriente",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Siria",
     flag: "🇸🇾",
     tagline: "Damasco e Aleppo",
@@ -557,7 +557,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "iraq",
-    region: "Medio Oriente",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Iraq",
     flag: "🇮🇶",
     tagline: "Il Kurdistan e le strade verso Babilonia",
@@ -568,7 +568,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "arabia-saudita",
-    region: "Medio Oriente",
+    region: "Asia centrale, meridionale e Medio Oriente",
     name: "Arabia Saudita",
     flag: "🇸🇦",
     tagline: "Riyadh e le città del paese",
@@ -579,7 +579,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "egitto",
-    region: "Africa settentrionale",
+    region: "Africa",
     name: "Egitto",
     flag: "🇪🇬",
     tagline: "Il Cairo, il Nilo e i templi",
@@ -594,7 +594,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "marocco",
-    region: "Africa settentrionale",
+    region: "Africa",
     name: "Marocco",
     flag: "🇲🇦",
     tagline: "Casablanca, Marrakech e le medine",
@@ -610,7 +610,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "tunisia",
-    region: "Africa settentrionale",
+    region: "Africa",
     name: "Tunisia",
     flag: "🇹🇳",
     tagline: "La medina di Tunisi, il sud e la costa",
@@ -625,7 +625,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "algeria",
-    region: "Africa settentrionale",
+    region: "Africa",
     name: "Algeria",
     flag: "🇩🇿",
     tagline: "Algeri, la Casbah e l'Atlante",
@@ -639,7 +639,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "libia",
-    region: "Africa settentrionale",
+    region: "Africa",
     name: "Libia",
     flag: "🇱🇾",
     tagline: "Il deserto e l'altopiano della Cirenaica",
@@ -649,7 +649,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "sudan",
-    region: "Africa settentrionale",
+    region: "Africa",
     name: "Sudan",
     flag: "🇸🇩",
     tagline: "Il Nilo, i villaggi e Khartoum",
@@ -661,7 +661,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "mauritania",
-    region: "Africa settentrionale",
+    region: "Africa",
     name: "Mauritania",
     flag: "🇲🇷",
     tagline: "Il deserto e la costa dell'Atlantico",
@@ -671,7 +671,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "etiopia",
-    region: "Corno d'Africa",
+    region: "Africa",
     name: "Etiopia",
     flag: "🇪🇹",
     tagline: "Altopiani, Addis Abeba e Harar",
@@ -685,7 +685,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "somalia",
-    region: "Corno d'Africa",
+    region: "Africa",
     name: "Somalia",
     flag: "🇸🇴",
     tagline: "Mogadiscio e la costa dell'Oceano Indiano",
@@ -698,7 +698,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "gibuti",
-    region: "Corno d'Africa",
+    region: "Africa",
     name: "Gibuti",
     flag: "🇩🇯",
     tagline: "Deserto, sale e mare",
@@ -708,7 +708,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "kenya",
-    region: "Africa orientale",
+    region: "Africa",
     name: "Kenya",
     flag: "🇰🇪",
     tagline: "Savana, Nairobi e Rift Valley",
@@ -725,7 +725,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "tanzania",
-    region: "Africa orientale",
+    region: "Africa",
     name: "Tanzania",
     flag: "🇹🇿",
     tagline: "Savana, Kilimangiaro e Zanzibar",
@@ -738,7 +738,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "uganda",
-    region: "Africa orientale",
+    region: "Africa",
     name: "Uganda",
     flag: "🇺🇬",
     tagline: "Kampala e le rive del lago Vittoria",
@@ -749,7 +749,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "ruanda",
-    region: "Africa orientale",
+    region: "Africa",
     name: "Ruanda",
     flag: "🇷🇼",
     tagline: "Kigali e le colline dei mille villaggi",
@@ -763,7 +763,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "sud-sudan",
-    region: "Africa orientale",
+    region: "Africa",
     name: "Sud Sudan",
     flag: "🇸🇸",
     tagline: "Villaggi, savana e campi profughi",
@@ -774,7 +774,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "malawi",
-    region: "Africa australe",
+    region: "Africa",
     name: "Malawi",
     flag: "🇲🇼",
     tagline: "Villaggi e il lago Malawi",
@@ -784,7 +784,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "zambia",
-    region: "Africa australe",
+    region: "Africa",
     name: "Zambia",
     flag: "🇿🇲",
     tagline: "Villaggi e savana",
@@ -794,7 +794,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "botswana",
-    region: "Africa australe",
+    region: "Africa",
     name: "Botswana",
     flag: "🇧🇼",
     tagline: "Kalahari, Okavango e Gaborone",
@@ -806,7 +806,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "lesotho",
-    region: "Africa australe",
+    region: "Africa",
     name: "Lesotho",
     flag: "🇱🇸",
     tagline: "Gli altopiani del regno nel cielo",
@@ -816,7 +816,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "sudafrica",
-    region: "Africa australe",
+    region: "Africa",
     name: "Sudafrica",
     flag: "🇿🇦",
     tagline: "Città del Capo, Johannesburg e le township",
@@ -837,7 +837,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "nigeria",
-    region: "Africa occidentale",
+    region: "Africa",
     name: "Nigeria",
     flag: "🇳🇬",
     tagline: "Lagos, il Biafra e Nollywood",
@@ -853,7 +853,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "ghana",
-    region: "Africa occidentale",
+    region: "Africa",
     name: "Ghana",
     flag: "🇬🇭",
     tagline: "Accra, il lago Volta e la foresta",
@@ -864,7 +864,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "senegal",
-    region: "Africa occidentale",
+    region: "Africa",
     name: "Senegal",
     flag: "🇸🇳",
     tagline: "Dakar, i villaggi e l'Atlantico",
@@ -879,7 +879,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "mali",
-    region: "Africa occidentale",
+    region: "Africa",
     name: "Mali",
     flag: "🇲🇱",
     tagline: "Timbuktu, il Niger e il Sahel",
@@ -891,7 +891,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "burkina-faso",
-    region: "Africa occidentale",
+    region: "Africa",
     name: "Burkina Faso",
     flag: "🇧🇫",
     tagline: "Villaggi mossi e Sahel",
@@ -904,7 +904,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "costa-avorio",
-    region: "Africa occidentale",
+    region: "Africa",
     name: "Costa d'Avorio",
     flag: "🇨🇮",
     tagline: "Abidjan e i villaggi del nord",
@@ -915,7 +915,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "sierra-leone",
-    region: "Africa occidentale",
+    region: "Africa",
     name: "Sierra Leone",
     flag: "🇸🇱",
     tagline: "Villaggi e guerra civile",
@@ -925,7 +925,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "benin",
-    region: "Africa occidentale",
+    region: "Africa",
     name: "Benin",
     flag: "🇧🇯",
     tagline: "Cotonou, Abomey e il regno del Dahomey",
@@ -935,7 +935,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "rd-congo",
-    region: "Africa centrale",
+    region: "Africa",
     name: "Repubblica Democratica del Congo",
     flag: "🇨🇩",
     tagline: "Kinshasa e il fiume Congo",
@@ -948,7 +948,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "camerun",
-    region: "Africa centrale",
+    region: "Africa",
     name: "Camerun",
     flag: "🇨🇲",
     tagline: "Villaggi coloniali e savana",
@@ -958,7 +958,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "ciad",
-    region: "Africa centrale",
+    region: "Africa",
     name: "Ciad",
     flag: "🇹🇩",
     tagline: "N'Djamena e il Sahel",
@@ -971,7 +971,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "messico",
-    region: "America centrale",
+    region: "Nord America",
     name: "Messico",
     flag: "🇲🇽",
     tagline: "Città del Messico, deserti, coste e villaggi",
@@ -989,7 +989,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "guatemala",
-    region: "America centrale",
+    region: "Nord America",
     name: "Guatemala",
     flag: "🇬🇹",
     tagline: "Vulcani, villaggi maya e Città del Guatemala",
@@ -1002,7 +1002,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "honduras",
-    region: "America centrale",
+    region: "Nord America",
     name: "Honduras",
     flag: "🇭🇳",
     tagline: "La giungla e la costa della Mosquitia",
@@ -1012,7 +1012,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "el-salvador",
-    region: "America centrale",
+    region: "Nord America",
     name: "El Salvador",
     flag: "🇸🇻",
     tagline: "Villaggi, vulcani e guerra civile",
@@ -1024,7 +1024,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "nicaragua",
-    region: "America centrale",
+    region: "Nord America",
     name: "Nicaragua",
     flag: "🇳🇮",
     tagline: "Laghi, vulcani e la rivoluzione",
@@ -1037,7 +1037,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "costa-rica",
-    region: "America centrale",
+    region: "Nord America",
     name: "Costa Rica",
     flag: "🇨🇷",
     tagline: "Foreste, vulcani e coste",
@@ -1048,7 +1048,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "panama",
-    region: "America centrale",
+    region: "Nord America",
     name: "Panama",
     flag: "🇵🇦",
     tagline: "Città di Panama, il Canale e le isole",
@@ -1059,7 +1059,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "cuba",
-    region: "Caraibi",
+    region: "Nord America",
     name: "Cuba",
     flag: "🇨🇺",
     tagline: "L'Avana, le campagne e il mare",
@@ -1077,7 +1077,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "giamaica",
-    region: "Caraibi",
+    region: "Nord America",
     name: "Giamaica",
     flag: "🇯🇲",
     tagline: "Kingston, il reggae e le coste",
@@ -1092,7 +1092,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "haiti",
-    region: "Caraibi",
+    region: "Nord America",
     name: "Haiti",
     flag: "🇭🇹",
     tagline: "Port-au-Prince, il vudù e le colline",
@@ -1105,7 +1105,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "repubblica-dominicana",
-    region: "Caraibi",
+    region: "Nord America",
     name: "Repubblica Dominicana",
     flag: "🇩🇴",
     tagline: "Baseball, coste e Santo Domingo",
@@ -1118,7 +1118,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "martinica",
-    region: "Caraibi",
+    region: "Nord America",
     name: "Martinica",
     flag: "🇲🇶",
     tagline: "Le piantagioni di canna da zucchero",
@@ -1128,7 +1128,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "bahamas",
-    region: "Caraibi",
+    region: "Nord America",
     name: "Bahamas",
     flag: "🇧🇸",
     tagline: "Nassau, il mare e il gioco d'azzardo",
