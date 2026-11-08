@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import {
-  loadMoviesAvailableInRegion,
   loadMoviesOnProviders,
   resolveMoviesByTitle,
   type Movie,
@@ -54,31 +53,32 @@ export function CountryFilms({ country, onBack }: CountryFilmsProps) {
   const [collapsed, setCollapsed] = useState<Set<number>>(() => new Set());
 
   const resolved = useQuery({
-    queryKey: ["travel-country-v2", country.id],
-    queryFn: async (): Promise<ResolvedFilm[]> => {
+    queryKey: ["travel-country-v3", country.id],
+    queryFn: async (): Promise<{ found: ResolvedFilm[]; missing: string[] }> => {
       const movies = await resolveMoviesByTitle(
         country.films.map((film) => ({ title: film.title, year: film.year })),
       );
       const found: ResolvedFilm[] = [];
+      const missing: string[] = [];
+      const seen = new Set<number>();
       country.films.forEach((film, index) => {
         const movie = movies[index];
-        if (movie) found.push({ film, movie });
+        if (!movie) missing.push(`${film.title} (${film.year})`);
+        else if (!seen.has(movie.id)) {
+          seen.add(movie.id);
+          found.push({ film, movie });
+        }
       });
-      // Tieni solo i film che si trovano da qualche parte in Italia
-      // (streaming, gratis, noleggio o acquisto).
-      const inItaly = new Set(
-        await loadMoviesAvailableInRegion(found.map((item) => item.movie.id)),
-      );
-      return found.filter((item) => inItaly.has(item.movie.id));
+      return { found, missing };
     },
     staleTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
     retry: false,
   });
 
-  const allItems = useMemo(() => resolved.data ?? [], [resolved.data]);
+  const allItems = useMemo(() => resolved.data?.found ?? [], [resolved.data]);
   useEffect(() => {
-    if (resolved.data) setTravelCount(country.id, resolved.data.length);
+    if (resolved.data) setTravelCount(country.id, resolved.data.found.length);
   }, [country.id, resolved.data]);
   const providerIds = useMemo(
     () => preferences.selectedProviders.map((provider) => provider.id),
@@ -161,9 +161,9 @@ export function CountryFilms({ country, onBack }: CountryFilmsProps) {
           </Text>
           {resolved.data ? (
             <Text style={[styles.tagline, { color: colors.primary }]}>
-              {resolved.data.length === country.films.length
-                ? `${resolved.data.length} film disponibili in Italia`
-                : `${resolved.data.length} film disponibili in Italia su ${country.films.length} selezionati`}
+              {resolved.data.found.length === country.films.length
+                ? `${resolved.data.found.length} film`
+                : `${resolved.data.found.length} film trovati su ${country.films.length} selezionati`}
             </Text>
           ) : null}
         </View>
@@ -257,7 +257,7 @@ export function CountryFilms({ country, onBack }: CountryFilmsProps) {
           <Text style={[styles.statusText, { color: colors.mutedForeground }]}>
             {onlyAvailable
               ? "Nessun film di questo paese è sui tuoi servizi. Disattiva il filtro per vederli tutti."
-              : "Non ho trovato i film di questo paese."}
+              : "Non ho trovato i film di questo paese su TMDB."}
           </Text>
         </View>
       ) : (
@@ -340,6 +340,11 @@ export function CountryFilms({ country, onBack }: CountryFilmsProps) {
           )}
         </View>
       )}
+      {resolved.data && resolved.data.missing.length > 0 ? (
+        <Text style={[styles.missing, { color: colors.mutedForeground }]}>
+          Non trovati su TMDB: {resolved.data.missing.join(", ")}.
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -385,6 +390,7 @@ const styles = StyleSheet.create({
   },
   collapsedTitle: { flex: 1, fontSize: 14, fontFamily: "Inter_600SemiBold" },
   collapsedMeta: { fontSize: 11 },
+  missing: { fontSize: 11, lineHeight: 16 },
   list: { gap: 18 },
   entry: { gap: 6 },
   noteRow: { flexDirection: "row", alignItems: "flex-start", gap: 7 },
