@@ -1540,7 +1540,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "roma",
-    region: "Europa mediterranea",
+    region: "Europa",
     group: "Italia",
     name: "Roma e Lazio",
     flag: "🛵",
@@ -1560,7 +1560,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "nord-ovest",
-    region: "Europa mediterranea",
+    region: "Europa",
     group: "Italia",
     name: "Milano, Torino e Nord-ovest",
     flag: "🌆",
@@ -1579,7 +1579,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "venezia",
-    region: "Europa mediterranea",
+    region: "Europa",
     group: "Italia",
     name: "Venezia e Nordest",
     flag: "🛶",
@@ -1595,7 +1595,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "emilia-romagna",
-    region: "Europa mediterranea",
+    region: "Europa",
     group: "Italia",
     name: "Emilia-Romagna",
     flag: "🍝",
@@ -1609,7 +1609,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "toscana",
-    region: "Europa mediterranea",
+    region: "Europa",
     group: "Italia",
     name: "Toscana",
     flag: "🌾",
@@ -1625,7 +1625,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "napoli",
-    region: "Europa mediterranea",
+    region: "Europa",
     group: "Italia",
     name: "Napoli e Campania",
     flag: "🌋",
@@ -1642,7 +1642,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "sud-italia",
-    region: "Europa mediterranea",
+    region: "Europa",
     group: "Italia",
     name: "Puglia, Basilicata e Calabria",
     flag: "🫒",
@@ -1658,7 +1658,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "sicilia",
-    region: "Europa mediterranea",
+    region: "Europa",
     group: "Italia",
     name: "Sicilia",
     flag: "🍋",
@@ -1678,7 +1678,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "sardegna",
-    region: "Europa mediterranea",
+    region: "Europa",
     group: "Italia",
     name: "Sardegna",
     flag: "🐑",
@@ -1691,7 +1691,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "madrid-castiglia",
-    region: "Europa mediterranea",
+    region: "Europa",
     group: "Spagna",
     name: "Madrid e Castiglia",
     flag: "🏰",
@@ -1711,7 +1711,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "barcellona",
-    region: "Europa mediterranea",
+    region: "Europa",
     group: "Spagna",
     name: "Barcellona e Catalogna",
     flag: "⛪",
@@ -1728,7 +1728,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "andalusia",
-    region: "Europa mediterranea",
+    region: "Europa",
     group: "Spagna",
     name: "Andalusia",
     flag: "💃",
@@ -1743,7 +1743,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "spagna-nord",
-    region: "Europa mediterranea",
+    region: "Europa",
     group: "Spagna",
     name: "Paesi Baschi, Galizia e Asturie",
     flag: "🌧️",
@@ -1759,7 +1759,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "provenza-costa-azzurra",
-    region: "Europa mediterranea",
+    region: "Europa",
     group: "Francia",
     name: "Provenza e Costa Azzurra",
     flag: "🌻",
@@ -1779,7 +1779,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "grecia",
-    region: "Europa mediterranea",
+    region: "Europa",
     name: "Grecia",
     flag: "🇬🇷",
     tagline: "Atene, Creta e le isole",
@@ -1798,7 +1798,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "malta",
-    region: "Europa mediterranea",
+    region: "Europa",
     name: "Malta",
     flag: "🇲🇹",
     tagline: "La Valletta, le barche e le fortezze",
@@ -1810,7 +1810,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "croazia",
-    region: "Europa mediterranea",
+    region: "Europa",
     name: "Croazia",
     flag: "🇭🇷",
     tagline: "Zagabria, Dalmazia e le isole",
@@ -1823,7 +1823,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "albania",
-    region: "Europa mediterranea",
+    region: "Europa",
     name: "Albania",
     flag: "🇦🇱",
     tagline: "Tirana, le montagne e la costa",
@@ -1835,7 +1835,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "parigi",
-    region: "Europa occidentale",
+    region: "Europa",
     group: "Francia",
     name: "Parigi",
     flag: "🗼",
@@ -1855,7 +1855,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "nord-bretagna",
-    region: "Europa occidentale",
+    region: "Europa",
     group: "Francia",
     name: "Nord, Normandia e Bretagna",
     flag: "🌊",
@@ -1872,7 +1872,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "province-francesi",
-    region: "Europa occidentale",
+    region: "Europa",
     group: "Francia",
     name: "Campagna e province francesi",
     flag: "🧀",
@@ -1889,7 +1889,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "portogallo",
-    region: "Europa occidentale",
+    region: "Europa",
     name: "Portogallo",
     flag: "🇵🇹",
     tagline: "Lisbona, Porto e l'Alentejo",
@@ -1903,7 +1903,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "olanda",
-    region: "Europa occidentale",
+    region: "Europa",
     name: "Olanda",
     flag: "🇳🇱",
     tagline: "Amsterdam, canali e villaggi",
@@ -1921,7 +1921,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "belgio",
-    region: "Europa occidentale",
+    region: "Europa",
     name: "Belgio",
     flag: "🇧🇪",
     tagline: "Bruxelles, Bruges e le Fiandre",
@@ -1939,7 +1939,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "londra",
-    region: "Europa occidentale",
+    region: "Europa",
     group: "Regno Unito",
     name: "Londra",
     flag: "🎡",
@@ -1959,7 +1959,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "inghilterra",
-    region: "Europa occidentale",
+    region: "Europa",
     group: "Regno Unito",
     name: "Inghilterra",
     flag: "🌦️",
@@ -1979,7 +1979,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "scozia",
-    region: "Europa occidentale",
+    region: "Europa",
     group: "Regno Unito",
     name: "Scozia",
     flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
@@ -1998,7 +1998,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "galles",
-    region: "Europa occidentale",
+    region: "Europa",
     group: "Regno Unito",
     name: "Galles",
     flag: "🐉",
@@ -2014,7 +2014,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "irlanda-nord",
-    region: "Europa occidentale",
+    region: "Europa",
     group: "Regno Unito",
     name: "Belfast e Irlanda del Nord",
     flag: "🍀",
@@ -2029,7 +2029,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "irlanda",
-    region: "Europa occidentale",
+    region: "Europa",
     name: "Irlanda",
     flag: "🇮🇪",
     tagline: "Dublino, villaggi e coste atlantiche",
@@ -2048,7 +2048,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "berlino",
-    region: "Europa occidentale",
+    region: "Europa",
     group: "Germania",
     name: "Berlino",
     flag: "🐻",
@@ -2068,7 +2068,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "germania",
-    region: "Europa occidentale",
+    region: "Europa",
     group: "Germania",
     name: "Germania: province e storia",
     flag: "🥨",
@@ -2086,7 +2086,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "svizzera",
-    region: "Europa occidentale",
+    region: "Europa",
     name: "Svizzera",
     flag: "🇨🇭",
     tagline: "Alpi, città e villaggi",
@@ -2101,7 +2101,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "austria",
-    region: "Europa occidentale",
+    region: "Europa",
     name: "Austria",
     flag: "🇦🇹",
     tagline: "Vienna, Salisburgo e le Alpi",
@@ -2117,7 +2117,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "svezia",
-    region: "Nord Europa",
+    region: "Europa",
     name: "Svezia",
     flag: "🇸🇪",
     tagline: "Stoccolma, laghi, foreste e isole",
@@ -2136,7 +2136,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "norvegia",
-    region: "Nord Europa",
+    region: "Europa",
     name: "Norvegia",
     flag: "🇳🇴",
     tagline: "Oslo, fiordi e il nord artico",
@@ -2155,7 +2155,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "danimarca",
-    region: "Nord Europa",
+    region: "Europa",
     name: "Danimarca",
     flag: "🇩🇰",
     tagline: "Copenaghen, lo Jutland e le isole",
@@ -2174,7 +2174,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "finlandia",
-    region: "Nord Europa",
+    region: "Europa",
     name: "Finlandia",
     flag: "🇫🇮",
     tagline: "Helsinki, i laghi e la Lapponia",
@@ -2191,7 +2191,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "islanda",
-    region: "Nord Europa",
+    region: "Europa",
     name: "Islanda",
     flag: "🇮🇸",
     tagline: "Reykjavík, vulcani e fiordi",
@@ -2209,7 +2209,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "baltici",
-    region: "Nord Europa",
+    region: "Europa",
     name: "Paesi baltici",
     flag: "🌲",
     tagline: "Estonia, Lettonia e Lituania",
@@ -2224,7 +2224,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "polonia",
-    region: "Est Europa e Balcani",
+    region: "Europa",
     name: "Polonia",
     flag: "🇵🇱",
     tagline: "Varsavia, Cracovia e la memoria del Novecento",
@@ -2242,7 +2242,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "cechia-slovacchia",
-    region: "Est Europa e Balcani",
+    region: "Europa",
     name: "Cechia e Slovacchia",
     flag: "🇨🇿",
     tagline: "Praga, i villaggi della Moravia e la Slovacchia",
@@ -2260,7 +2260,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "ungheria",
-    region: "Est Europa e Balcani",
+    region: "Europa",
     name: "Ungheria",
     flag: "🇭🇺",
     tagline: "Budapest, la pianura e la storia del Novecento",
@@ -2279,7 +2279,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "romania",
-    region: "Est Europa e Balcani",
+    region: "Europa",
     name: "Romania",
     flag: "🇷🇴",
     tagline: "Bucarest, i villaggi e la nuova ondata del cinema rumeno",
@@ -2299,7 +2299,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "bulgaria",
-    region: "Est Europa e Balcani",
+    region: "Europa",
     name: "Bulgaria",
     flag: "🇧🇬",
     tagline: "Sofia, le montagne e la provincia",
@@ -2316,7 +2316,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "serbia",
-    region: "Est Europa e Balcani",
+    region: "Europa",
     name: "Serbia",
     flag: "🇷🇸",
     tagline: "Belgrado, i villaggi e i Balcani di Kusturica",
@@ -2333,7 +2333,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "bosnia",
-    region: "Est Europa e Balcani",
+    region: "Europa",
     name: "Bosnia ed Erzegovina",
     flag: "🇧🇦",
     tagline: "Sarajevo e il dopoguerra",
@@ -2349,7 +2349,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "macedonia-nord",
-    region: "Est Europa e Balcani",
+    region: "Europa",
     name: "Macedonia del Nord",
     flag: "🇲🇰",
     tagline: "Skopje, villaggi e montagne",
@@ -2361,7 +2361,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "kosovo",
-    region: "Est Europa e Balcani",
+    region: "Europa",
     name: "Kosovo",
     flag: "🇽🇰",
     tagline: "Pristina e i villaggi dopo la guerra",
@@ -2374,7 +2374,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "ucraina",
-    region: "Est Europa e Balcani",
+    region: "Europa",
     name: "Ucraina",
     flag: "🇺🇦",
     tagline: "Kiev, i villaggi e la guerra del Donbass",
@@ -2393,7 +2393,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "bielorussia",
-    region: "Est Europa e Balcani",
+    region: "Europa",
     name: "Bielorussia",
     flag: "🇧🇾",
     tagline: "Foreste e villaggi del Nord",
@@ -2404,7 +2404,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "russia",
-    region: "Est Europa e Balcani",
+    region: "Europa",
     name: "Russia",
     flag: "🇷🇺",
     tagline: "Mosca, San Pietroburgo e la provincia",
@@ -2424,7 +2424,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "georgia",
-    region: "Est Europa e Balcani",
+    region: "Europa",
     name: "Georgia",
     flag: "🇬🇪",
     tagline: "Tbilisi, il Caucaso e il Mar Nero",
@@ -2439,7 +2439,7 @@ export const TRAVEL_COUNTRIES: TravelCountry[] = [
   },
   {
     id: "armenia",
-    region: "Est Europa e Balcani",
+    region: "Europa",
     name: "Armenia",
     flag: "🇦🇲",
     tagline: "Yerevan, il monte Ararat e la memoria",
