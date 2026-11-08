@@ -10,10 +10,12 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CountryFilms } from "@/components/CountryFilms";
+import { TravelMap } from "@/components/TravelMap";
 import {
   TRAVEL_COUNTRIES,
   type TravelCountry,
 } from "@/constants/travelFilms";
+import { GROUP_META } from "@/constants/travelGroups";
 import { useColors } from "@/hooks/useColors";
 import { getTravelCount } from "@/lib/travelCounts";
 
@@ -22,17 +24,6 @@ const REGIONS: string[] = [
 ];
 
 type Block = { group: string | null; countries: TravelCountry[] };
-
-const GROUP_META: Record<string, { flag: string; tagline: string }> = {
-  Italia: { flag: "🇮🇹", tagline: "Da Roma a Milano, dal Sud alle isole" },
-  Spagna: { flag: "🇪🇸", tagline: "Madrid, Barcellona, Andalusia e il Nord" },
-  Francia: { flag: "🇫🇷", tagline: "Parigi, la Provenza e le province" },
-  "Regno Unito": { flag: "🇬🇧", tagline: "Londra, Inghilterra, Scozia, Galles e Irlanda del Nord" },
-  Germania: { flag: "🇩🇪", tagline: "Berlino e il resto del paese" },
-  "Stati Uniti": { flag: "🇺🇸", tagline: "Dalle grandi città alle pianure, dall'Alaska alle Hawaii" },
-  Canada: { flag: "🇨🇦", tagline: "Il Canada anglofono e il Québec" },
-  Australia: { flag: "🇦🇺", tagline: "Outback, Sydney, Melbourne e Tasmania" },
-};
 
 /** Divide le schede di un'area in blocchi: i paesi con più schede (Italia,
  *  Spagna, Stati Uniti…) formano un unico blocco, che si apre in una pagina
@@ -73,6 +64,8 @@ export default function TravelScreen() {
   const savedY = useRef(0);
   const savedGroupY = useRef(0);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [mode, setMode] = useState<"map" | "list">("map");
+  const [mapRegion, setMapRegion] = useState<string | null>(null);
 
   const blocksByRegion = useMemo(
     () => new Map(REGIONS.map((region) => [region, buildBlocks(region)])),
@@ -159,6 +152,15 @@ export default function TravelScreen() {
         <Feather name="chevron-right" size={20} color={colors.mutedForeground} />
       </Pressable>
     );
+  };
+
+  const selectFromMap = (key: string) => {
+    if (GROUP_META[key]) {
+      openGroupPage(key);
+      return;
+    }
+    const country = TRAVEL_COUNTRIES.find((item) => item.id === key);
+    if (country) openCountry(country);
   };
 
   const renderGroupCard = (group: string, areas: TravelCountry[]) => {
@@ -259,6 +261,48 @@ export default function TravelScreen() {
             paesaggi e persone.
           </Text>
 
+          <View style={styles.modeBar}>
+            {(["map", "list"] as const).map((item) => (
+              <Pressable
+                key={item}
+                testID={`travel-mode-${item}`}
+                accessibilityRole="button"
+                accessibilityState={{ selected: mode === item }}
+                onPress={() => setMode(item)}
+                style={({ pressed }) => [
+                  styles.modeButton,
+                  {
+                    backgroundColor: mode === item ? colors.primary : "transparent",
+                    borderColor: mode === item ? colors.primary : colors.border,
+                    opacity: pressed ? 0.7 : 1,
+                  },
+                ]}
+              >
+                <Feather
+                  name={item === "map" ? "globe" : "list"}
+                  size={14}
+                  color={mode === item ? colors.primaryForeground : colors.foreground}
+                />
+                <Text
+                  style={[
+                    styles.toggleAllText,
+                    { color: mode === item ? colors.primaryForeground : colors.foreground },
+                  ]}
+                >
+                  {item === "map" ? "Mappa" : "Elenco"}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          {mode === "map" ? (
+            <TravelMap
+              region={mapRegion}
+              onRegionChange={setMapRegion}
+              onSelectTarget={selectFromMap}
+            />
+          ) : (
+            <>
           <Pressable
             testID="travel-toggle-regions"
             accessibilityRole="button"
@@ -329,6 +373,8 @@ export default function TravelScreen() {
               </View>
             );
           })}
+            </>
+          )}
         </>
       )}
     </ScrollView>
@@ -350,6 +396,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderWidth: 1,
     borderRadius: 10,
+  },
+  modeBar: { flexDirection: "row", gap: 8 },
+  modeButton: {
+    minHeight: 34,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderRadius: 17,
   },
   toggleAllText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
   section: { gap: 10, marginTop: 6 },
