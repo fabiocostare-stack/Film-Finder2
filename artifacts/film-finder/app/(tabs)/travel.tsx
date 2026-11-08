@@ -23,8 +23,20 @@ const REGIONS: string[] = [
 
 type Block = { group: string | null; countries: TravelCountry[] };
 
+const GROUP_META: Record<string, { flag: string; tagline: string }> = {
+  Italia: { flag: "🇮🇹", tagline: "Da Roma a Milano, dal Sud alle isole" },
+  Spagna: { flag: "🇪🇸", tagline: "Madrid, Barcellona, Andalusia e il Nord" },
+  Francia: { flag: "🇫🇷", tagline: "Parigi, la Provenza e le province" },
+  "Regno Unito": { flag: "🇬🇧", tagline: "Londra, Inghilterra, Scozia, Galles e Irlanda del Nord" },
+  Germania: { flag: "🇩🇪", tagline: "Berlino e il resto del paese" },
+  "Stati Uniti": { flag: "🇺🇸", tagline: "Dalle grandi città alle pianure, dall'Alaska alle Hawaii" },
+  Canada: { flag: "🇨🇦", tagline: "Il Canada anglofono e il Québec" },
+  Australia: { flag: "🇦🇺", tagline: "Outback, Sydney, Melbourne e Tasmania" },
+};
+
 /** Divide le schede di un'area in blocchi: i paesi con più schede (Italia,
- *  Spagna, Stati Uniti…) formano un blocco comprimibile. */
+ *  Spagna, Stati Uniti…) formano un unico blocco, che si apre in una pagina
+ *  con le varie zone. In Europa l'elenco è in ordine alfabetico. */
 function buildBlocks(region: string): Block[] {
   const blocks: Block[] = [];
   const byGroup = new Map<string, Block>();
@@ -42,11 +54,14 @@ function buildBlocks(region: string): Block[] {
       blocks.push({ group: null, countries: [country] });
     }
   }
+  if (region === "Europa") {
+    const label = (block: Block) => block.group ?? block.countries[0]!.name;
+    blocks.sort((x, y) => label(x).localeCompare(label(y), "it"));
+  }
   return blocks;
 }
 
 const regionKey = (region: string) => `r:${region}`;
-const groupKey = (region: string, group: string) => `g:${region}|${group}`;
 
 export default function TravelScreen() {
   const colors = useColors();
@@ -56,6 +71,8 @@ export default function TravelScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const scrollY = useRef(0);
   const savedY = useRef(0);
+  const savedGroupY = useRef(0);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
 
   const blocksByRegion = useMemo(
     () => new Map(REGIONS.map((region) => [region, buildBlocks(region)])),
@@ -81,15 +98,22 @@ export default function TravelScreen() {
     );
 
   const openCountry = (country: TravelCountry) => {
-    savedY.current = scrollY.current;
+    if (openGroup) savedGroupY.current = scrollY.current;
+    else savedY.current = scrollY.current;
     setSelected(country);
     scrollRef.current?.scrollTo({ y: 0, animated: false });
   };
 
-  // Tornando all'elenco, riporta la vista al punto in cui eri
+  const openGroupPage = (group: string) => {
+    savedY.current = scrollY.current;
+    setOpenGroup(group);
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  };
+
+  // Tornando indietro, riporta la vista al punto in cui eri
   useEffect(() => {
     if (selected !== null) return;
-    const y = savedY.current;
+    const y = openGroup ? savedGroupY.current : savedY.current;
     if (y <= 0) return;
     const timers = [0, 60, 200].map((delay) =>
       setTimeout(
@@ -98,7 +122,7 @@ export default function TravelScreen() {
       ),
     );
     return () => timers.forEach(clearTimeout);
-  }, [selected]);
+  }, [selected, openGroup]);
 
   const renderCard = (country: TravelCountry) => {
     const known = getTravelCount(country.id);
@@ -137,6 +161,45 @@ export default function TravelScreen() {
     );
   };
 
+  const renderGroupCard = (group: string, areas: TravelCountry[]) => {
+    const meta = GROUP_META[group] ?? { flag: "🌍", tagline: "" };
+    return (
+      <Pressable
+        key={`group-${group}`}
+        testID={`open-group-${group}`}
+        accessibilityRole="button"
+        accessibilityLabel={`Apri ${group}`}
+        onPress={() => openGroupPage(group)}
+        style={({ pressed }) => [
+          styles.card,
+          {
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+            opacity: pressed ? 0.75 : 1,
+          },
+        ]}
+      >
+        <Text style={styles.flag}>{meta.flag}</Text>
+        <View style={styles.cardCopy}>
+          <Text style={[styles.cardName, { color: colors.foreground }]}>
+            {group}
+          </Text>
+          <Text style={[styles.cardTagline, { color: colors.mutedForeground }]}>
+            {meta.tagline}
+          </Text>
+          <Text style={[styles.cardCount, { color: colors.primary }]}>
+            {areas.length} zone
+          </Text>
+        </View>
+        <Feather name="chevron-right" size={20} color={colors.mutedForeground} />
+      </Pressable>
+    );
+  };
+
+  const groupAreas = openGroup
+    ? TRAVEL_COUNTRIES.filter((country) => country.group === openGroup)
+    : [];
+
   return (
     <ScrollView
       ref={scrollRef}
@@ -156,6 +219,33 @@ export default function TravelScreen() {
     >
       {selected ? (
         <CountryFilms country={selected} onBack={() => setSelected(null)} />
+      ) : openGroup ? (
+        <>
+          <Pressable
+            testID="travel-group-back"
+            accessibilityRole="button"
+            accessibilityLabel="Indietro"
+            onPress={() => {
+              setOpenGroup(null);
+            }}
+            style={({ pressed }) => [
+              styles.backButton,
+              { opacity: pressed ? 0.7 : 1 },
+            ]}
+          >
+            <Feather name="arrow-left" size={18} color={colors.foreground} />
+            <Text style={[styles.backText, { color: colors.foreground }]}>
+              Indietro
+            </Text>
+          </Pressable>
+          <Text style={[styles.title, { color: colors.foreground }]}>
+            {GROUP_META[openGroup]?.flag} {openGroup}
+          </Text>
+          <Text style={[styles.description, { color: colors.mutedForeground }]}>
+            {GROUP_META[openGroup]?.tagline}
+          </Text>
+          <View style={styles.list}>{groupAreas.map(renderCard)}</View>
+        </>
       ) : (
         <>
           <Text style={[styles.eyebrow, { color: colors.primary }]}>
@@ -195,10 +285,7 @@ export default function TravelScreen() {
 
           {REGIONS.map((region) => {
             const blocks = blocksByRegion.get(region) ?? [];
-            const total = blocks.reduce(
-              (sum, block) => sum + block.countries.length,
-              0,
-            );
+            const total = blocks.length;
             const regionClosed = collapsed.has(regionKey(region));
             return (
               <View key={region} style={styles.section}>
@@ -231,64 +318,12 @@ export default function TravelScreen() {
                 </Pressable>
 
                 {regionClosed ? null : (
-                  <View style={styles.blocks}>
-                    {blocks.map((block) => {
-                      if (!block.group) {
-                        return (
-                          <View key={block.countries[0]!.id} style={styles.list}>
-                            {block.countries.map(renderCard)}
-                          </View>
-                        );
-                      }
-                      const key = groupKey(region, block.group);
-                      const groupClosed = collapsed.has(key);
-                      return (
-                        <View key={key} style={styles.group}>
-                          <Pressable
-                            testID={`toggle-group-${block.group}`}
-                            accessibilityRole="button"
-                            accessibilityState={{ expanded: !groupClosed }}
-                            accessibilityLabel={`${groupClosed ? "Espandi" : "Comprimi"} ${block.group}`}
-                            onPress={() => toggle(key)}
-                            style={({ pressed }) => [
-                              styles.groupHeader,
-                              {
-                                backgroundColor: colors.card,
-                                borderColor: colors.border,
-                                opacity: pressed ? 0.7 : 1,
-                              },
-                            ]}
-                          >
-                            <Feather
-                              name={groupClosed ? "chevron-right" : "chevron-down"}
-                              size={17}
-                              color={colors.mutedForeground}
-                            />
-                            <Text
-                              style={[
-                                styles.groupTitle,
-                                { color: colors.foreground },
-                              ]}
-                            >
-                              {block.group}
-                            </Text>
-                            <Text
-                              style={[
-                                styles.regionCount,
-                                { color: colors.mutedForeground },
-                              ]}
-                            >
-                              {block.countries.length}
-                            </Text>
-                          </Pressable>
-                          {groupClosed ? null : (
-                            <View style={styles.list}>
-                              {block.countries.map(renderCard)}
-                            </View>
-                          )}
-                        </View>
-                      );
-                    })}
+                  <View style={styles.list}>
+                    {blocks.map((block) =>
+                      block.group
+                        ? renderGroupCard(block.group, block.countries)
+                        : renderCard(block.countries[0]!),
+                    )}
                   </View>
                 )}
               </View>
@@ -339,6 +374,8 @@ const styles = StyleSheet.create({
   },
   groupTitle: { flex: 1, fontSize: 15, fontFamily: "Inter_700Bold" },
   list: { gap: 10 },
+  backButton: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 6, minHeight: 36 },
+  backText: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
   card: {
     flexDirection: "row",
     alignItems: "center",
