@@ -1,6 +1,6 @@
-// Ricorda quanti film di ciascun paese risultano davvero disponibili in Italia,
+// Ricorda quanti film di ciascun paese sono stati trovati su TMDB,
 // dopo che la pagina del paese è stata aperta almeno una volta.
-const STORAGE_KEY = "film-finder.travel-counts.v1";
+const STORAGE_KEY = "film-finder.travel-counts.v2";
 
 let memory: Record<string, number> | null = null;
 
