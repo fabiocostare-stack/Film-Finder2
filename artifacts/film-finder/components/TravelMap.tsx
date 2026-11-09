@@ -58,9 +58,16 @@ type Props = {
   onRegionChange: (region: string | null) => void;
   /** Chiave dello stato scelto: nome del gruppo (es. "Italia") o id scheda. */
   onSelectTarget: (key: string) => void;
+  /** Mostra tutti i film di tutta la regione (continente). */
+  onRegionAll?: (region: string) => void;
 };
 
-export function TravelMap({ region, onRegionChange, onSelectTarget }: Props) {
+export function TravelMap({
+  region,
+  onRegionChange,
+  onSelectTarget,
+  onRegionAll,
+}: Props) {
   const colors = useColors();
   const [width, setWidth] = useState(0);
   const [zoom, setZoom] = useState(1);
@@ -284,6 +291,28 @@ export function TravelMap({ region, onRegionChange, onSelectTarget }: Props) {
               </Pressable>
             ))}
           </View>
+          {onRegionAll && (
+            <Pressable
+              key="continent-all"
+              testID={`continent-all-${region}`}
+              accessibilityRole="button"
+              accessibilityLabel={`Tutti i film di ${SHORT_REGION[region] ?? region}`}
+              onPress={() => onRegionAll(region)}
+              style={({ pressed }) => [
+                styles.stateChip,
+                {
+                  backgroundColor: colors.primary,
+                  borderColor: colors.primary,
+                  opacity: pressed ? 0.7 : 1,
+                },
+              ]}
+            >
+              <Text style={styles.stateFlag}>🎬</Text>
+              <Text style={[styles.stateText, { color: colors.primaryForeground }]}>
+                Tutti i film di {SHORT_REGION[region] ?? region}
+              </Text>
+            </Pressable>
+          )}
         </>
       )}
     </View>

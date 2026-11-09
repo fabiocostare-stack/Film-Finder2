@@ -10,6 +10,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CountryFilms } from "@/components/CountryFilms";
+import { ContinentFilms } from "@/components/ContinentFilms";
 import { TravelMap } from "@/components/TravelMap";
 import {
   TRAVEL_COUNTRIES,
@@ -66,6 +67,7 @@ export default function TravelScreen() {
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [mode, setMode] = useState<"map" | "list">("map");
   const [mapRegion, setMapRegion] = useState<string | null>(null);
+  const [continentAll, setContinentAll] = useState<string | null>(null);
 
   const blocksByRegion = useMemo(
     () => new Map(REGIONS.map((region) => [region, buildBlocks(region)])),
@@ -221,6 +223,8 @@ export default function TravelScreen() {
     >
       {selected ? (
         <CountryFilms country={selected} onBack={() => setSelected(null)} />
+      ) : continentAll ? (
+        <ContinentFilms region={continentAll} onBack={() => setContinentAll(null)} />
       ) : openGroup ? (
         <>
           <Pressable
@@ -300,6 +304,7 @@ export default function TravelScreen() {
               region={mapRegion}
               onRegionChange={setMapRegion}
               onSelectTarget={selectFromMap}
+              onRegionAll={setContinentAll}
             />
           ) : (
             <>
