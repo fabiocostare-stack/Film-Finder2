@@ -1,6 +1,15 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
+import {
+  resolveMoviesByTitle,
+  type Movie,
+} from "@workspace/api-client-react";
+import { CatalogNotice, getCatalogErrorMessage } from "@/components/CatalogNotice";
+import { FilmCard } from "@/components/FilmCard";
 import { TRAVEL_COUNTRIES } from "@/constants/travelFilms";
+import { usePreferences } from "@/context/PreferencesContext";
+import { useMovieCredits } from "@/hooks/useMovieCredits";
 import { useColors } from "@/hooks/useColors";
 
 type Props = {
@@ -13,6 +22,11 @@ type Props = {
  *  dei film disponibili, divisi per gruppo/paese. */
 export function ContinentFilms({ region, onBack }: Props) {
   const colors = useColors();
+  const {
+    preferences,
+    toggleWatchedMovie,
+    toggleSavedMovie,
+  } = usePreferences();
 
   const countries = TRAVEL_COUNTRIES.filter((c) => c.region === region);
 
@@ -49,6 +63,74 @@ export function ContinentFilms({ region, onBack }: Props) {
     );
   }
 
+  const uniqueMap = new Map<string, { title: string; year: number }>();
+  for (const country of countries) {
+    for (const film of country.films) {
+      const key = `${film.title}|${film.year}`;
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, { title: film.title, year: film.year });
+      }
+    }
+  }
+  const uniqueList = Array.from(uniqueMap.values());
+
+  const resolved = useQuery({
+    queryKey: ["continent-films-v1", region],
+    queryFn: () => resolveMoviesByTitle(uniqueList),
+    staleTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    retry: false,
+    enabled: uniqueList.length > 0,
+  });
+
+  const movieByKey = new Map<number, Movie>();
+  if (resolved.data) {
+    resolved.data.forEach((movie: Movie | null, index: number) => {
+      if (movie) {
+        movieByKey.set(movie.id, movie);
+      }
+    });
+  }
+
+  const resolvedMovieIds = resolved.data
+    ? resolved.data.filter((m): m is Movie => Boolean(m)).map((m) => m.id)
+    : [];
+  const { creditsByMovieId, isFetching } = useMovieCredits(resolvedMovieIds);
+
+  const watchedIds = new Set(
+    preferences.watchedMovies.map((m) => String(m.id)),
+  );
+  const savedIds = new Set(
+    preferences.savedMovies.map((m) => String(m.id)),
+  );
+
+  if (resolved.isError) {
+    return (
+      <ScrollView
+        style={[styles.screen, { backgroundColor: colors.background }]}
+        contentContainerStyle={styles.emptyContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Indietro"
+          onPress={onBack}
+          style={styles.backButton}
+        >
+          <Feather name="arrow-left" size={18} color={colors.foreground} />
+          <Text style={[styles.backText, { color: colors.primary }]}>
+            Indietro
+          </Text>
+        </Pressable>
+        <CatalogNotice
+          title="Errore nel caricamento"
+          message={getCatalogErrorMessage(resolved.error, "Impossibile caricare i film di questa area.")}
+          onRetry={() => resolved.refetch()}
+        />
+      </ScrollView>
+    );
+  }
+
   return (
     <ScrollView
       style={[styles.screen, { backgroundColor: colors.background }]}
@@ -80,14 +162,34 @@ export function ContinentFilms({ region, onBack }: Props) {
           <Text style={[styles.countryName, { color: colors.primary }]}>
             {country.flag} {country.name} ({country.films.length})
           </Text>
-          {country.films.map((film) => (
-            <Text
-              key={film.title + film.year}
-              style={[styles.filmRow, { color: colors.primary }]}
-            >
-              {film.title} ({film.year})
-            </Text>
-          ))}
+          {country.films.map((film) => {
+            const movie = movieByKey.get(
+              Number(
+                Array.from(movieByKey.entries()).find(
+                  ([, m]) =>
+                    m.title === film.title &&
+                    m.releaseDate?.slice(0, 4) ===
+                      String(film.year),
+                )?.[0],
+              ),
+            );
+            if (!movie) return null;
+            const credits = creditsByMovieId.get(movie.id);
+            return (
+              <FilmCard
+                key={movie.id}
+                movie={movie}
+                credits={credits}
+                creditsLoading={
+                  isFetching && !creditsByMovieId.has(movie.id)
+                }
+                isWatched={watchedIds.has(String(movie.id))}
+                isSaved={savedIds.has(String(movie.id))}
+                onToggleWatched={toggleWatchedMovie}
+                onToggleSave={toggleSavedMovie}
+              />
+            );
+          })}
         </View>
       ))}
     </ScrollView>
