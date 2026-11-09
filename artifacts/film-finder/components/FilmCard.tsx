@@ -28,6 +28,8 @@ type FilmCardProps = {
   onToggleSave: (movie: Movie) => void;
   onDismiss?: (movie: Movie) => void;
   releaseLabel?: string | null;
+  badge?: string | null;
+  onOpenShowtimes?: (movie: Movie) => void;
 };
 
 function yearOf(date: string): string {
@@ -51,6 +53,8 @@ export function FilmCard({
   onToggleSave,
   onDismiss,
   releaseLabel = null,
+  badge = null,
+  onOpenShowtimes,
 }: FilmCardProps) {
   const colors = useColors();
   const [showAvailability, setShowAvailability] = useState<boolean>(false);
@@ -80,24 +84,43 @@ export function FilmCard({
         { backgroundColor: colors.card, borderColor: colors.border },
       ]}
     >
-      {posterUri ? (
-        <Image
-          source={{ uri: posterUri }}
-          style={[styles.poster, { backgroundColor: colors.secondary }]}
-          resizeMode="cover"
-          accessibilityLabel={`Locandina di ${movie.title}`}
-        />
-      ) : (
-        <View
-          style={[
-            styles.poster,
-            styles.posterFallback,
-            { backgroundColor: colors.secondary },
-          ]}
-        >
-          <Feather name="film" size={23} color={colors.mutedForeground} />
-        </View>
-      )}
+      <View style={styles.posterContainer}>
+        {posterUri ? (
+          <Image
+            source={{ uri: posterUri }}
+            style={[styles.poster, { backgroundColor: colors.secondary }]}
+            resizeMode="cover"
+            accessibilityLabel={`Locandina di ${movie.title}`}
+          />
+        ) : (
+          <View
+            style={[
+              styles.poster,
+              styles.posterFallback,
+              { backgroundColor: colors.secondary },
+            ]}
+          >
+            <Feather name="film" size={23} color={colors.mutedForeground} />
+          </View>
+        )}
+        {badge ? (
+          <View
+            style={[
+              styles.posterBadge,
+              { backgroundColor: colors.primary },
+            ]}
+          >
+            <Text
+              style={[
+                styles.posterBadgeText,
+                { color: colors.primaryForeground },
+              ]}
+            >
+              {badge}
+            </Text>
+          </View>
+        ) : null}
+      </View>
 
       <View style={styles.body}>
         <View style={styles.titleLine}>
@@ -184,6 +207,34 @@ export function FilmCard({
             </View>
           </View>
         )}
+
+        {onOpenShowtimes ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Cerca orari al cinema per ${movie.title}`}
+            onPress={() => onOpenShowtimes(movie)}
+            style={({ pressed }) => [
+              styles.showtimesButton,
+              {
+                borderColor: colors.border,
+                backgroundColor: colors.secondary,
+                opacity: pressed ? 0.75 : 1,
+              },
+            ]}
+          >
+            <Feather name="clock" size={13} color={colors.primary} />
+            <Text
+              style={[styles.showtimesButtonText, { color: colors.foreground }]}
+            >
+              Orari nei cinema
+            </Text>
+            <Feather
+              name="external-link"
+              size={12}
+              color={colors.mutedForeground}
+            />
+          </Pressable>
+        ) : null}
 
         <View style={styles.actions}>
           <Pressable
@@ -354,6 +405,30 @@ const styles = StyleSheet.create({
   },
   poster: { width: 92, height: 136, borderRadius: 12 },
   posterFallback: { alignItems: "center", justifyContent: "center" },
+  posterContainer: {
+    position: "relative",
+    width: 92,
+    height: 136,
+  },
+  posterBadge: {
+    position: "absolute",
+    top: 6,
+    left: 6,
+    paddingVertical: 3,
+    paddingHorizontal: 6,
+    borderRadius: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.25,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  posterBadgeText: {
+    fontSize: 9,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 0.4,
+    textTransform: "uppercase",
+  },
   body: { flex: 1, minWidth: 160, paddingLeft: 12, paddingVertical: 3 },
   titleLine: { flexDirection: "row", alignItems: "flex-start", gap: 6 },
   title: {
@@ -382,6 +457,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 7,
+  },
+  showtimesButton: {
+    marginTop: 8,
+    marginBottom: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  showtimesButtonText: {
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
   },
   actions: {
     marginTop: "auto",

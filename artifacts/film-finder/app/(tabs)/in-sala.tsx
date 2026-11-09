@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -66,6 +67,67 @@ function rankMoviesByTasteAndRating(
   return [...movies].sort((a, b) => score(b) - score(a));
 }
 
+export type SortMode = "taste" | "rating" | "date" | "popular";
+
+const SORT_OPTIONS: Array<{
+  mode: SortMode;
+  label: string;
+  icon: "user-check" | "star" | "calendar" | "trending-up";
+}> = [
+  { mode: "taste", label: "Per te", icon: "user-check" },
+  { mode: "rating", label: "Più votati", icon: "star" },
+  { mode: "date", label: "Data uscita", icon: "calendar" },
+  { mode: "popular", label: "Più visti", icon: "trending-up" },
+];
+
+function sortMovies(
+  movies: Movie[],
+  mode: SortMode,
+  profile: TasteProfile,
+  isUpcoming: boolean,
+): Movie[] {
+  const list = [...movies];
+  switch (mode) {
+    case "taste":
+      return rankMoviesByTasteAndRating(list, profile);
+    case "rating":
+      return list.sort((a, b) => {
+        if (b.voteAverage !== a.voteAverage) {
+          return b.voteAverage - a.voteAverage;
+        }
+        return (b.voteCount ?? 0) - (a.voteCount ?? 0);
+      });
+    case "date":
+      return list.sort((a, b) => {
+        const dateA = a.releaseDate || "";
+        const dateB = b.releaseDate || "";
+        return isUpcoming
+          ? dateA.localeCompare(dateB)
+          : dateB.localeCompare(dateA);
+      });
+    case "popular":
+      return list.sort((a, b) => {
+        const countDiff = (b.voteCount ?? 0) - (a.voteCount ?? 0);
+        if (countDiff !== 0) return countDiff;
+        return b.voteAverage - a.voteAverage;
+      });
+  }
+}
+
+function isNewThisWeek(releaseDate?: string | null): boolean {
+  if (!releaseDate) return false;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(releaseDate);
+  if (!match) return false;
+  const release = new Date(
+    Number(match[1]),
+    Number(match[2]) - 1,
+    Number(match[3]),
+  );
+  const now = new Date();
+  const diffDays = (now.getTime() - release.getTime()) / (1000 * 60 * 60 * 24);
+  return diffDays >= -2 && diffDays <= 10;
+}
+
 const REGION = "IT";
 const STALE_TIME = 30 * 60 * 1000;
 const MONTHS = [
@@ -108,6 +170,7 @@ export default function InTheatersScreen() {
   const insets = useSafeAreaInsets();
   const { preferences, toggleWatchedMovie, toggleSavedMovie } = usePreferences();
   const [listMode, setListMode] = useState<ListMode>("now");
+  const [sortBy, setSortBy] = useState<SortMode>("taste");
 
   const catalog = useQuery({
     queryKey: ["in-theaters-v1", REGION],
@@ -127,16 +190,14 @@ export default function InTheatersScreen() {
   );
   const personalised = hasTasteSignals(profile);
 
-  const nowPlaying = useMemo(
-    () => rankMoviesByTasteAndRating(catalog.data?.nowPlaying ?? [], profile),
-    [catalog.data?.nowPlaying, profile],
-  );
-  const upcoming = useMemo(
-    () => rankMoviesByTasteAndRating(catalog.data?.upcoming ?? [], profile),
-    [catalog.data?.upcoming, profile],
-  );
+  const rawNowPlaying = catalog.data?.nowPlaying ?? [];
+  const rawUpcoming = catalog.data?.upcoming ?? [];
 
-  const visibleMovies = listMode === "now" ? nowPlaying : upcoming;
+  const visibleMovies = useMemo(() => {
+    const list = listMode === "now" ? rawNowPlaying : rawUpcoming;
+    return sortMovies(list, sortBy, profile, listMode === "upcoming");
+  }, [listMode, rawNowPlaying, rawUpcoming, sortBy, profile]);
+
   const movieCredits = useMovieCredits(visibleMovies.map((movie) => movie.id));
   const watchedIds = useMemo(
     () => new Set(preferences.watchedMovies.map((movie) => movie.id)),
@@ -146,6 +207,12 @@ export default function InTheatersScreen() {
     () => new Set(preferences.savedMovies.map((movie) => movie.id)),
     [preferences.savedMovies],
   );
+
+  const handleOpenShowtimes = (movie: Movie) => {
+    const query = `${movie.title} orari cinema`;
+    const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    void Linking.openURL(url);
+  };
 
   const renderMovie = (movie: Movie) => (
     <FilmCard
@@ -163,6 +230,12 @@ export default function InTheatersScreen() {
       releaseLabel={
         listMode === "upcoming" ? formatReleaseLabel(movie.releaseDate) : null
       }
+      badge={
+        listMode === "now" && isNewThisWeek(movie.releaseDate)
+          ? "Novità"
+          : null
+      }
+      onOpenShowtimes={handleOpenShowtimes}
     />
   );
 
@@ -170,6 +243,36 @@ export default function InTheatersScreen() {
     listMode === "now"
       ? "Nessun film in programmazione nelle sale italiane in questo momento."
       : "Nessuna uscita annunciata per le sale italiane al momento.";
+
+  const orderNoteMessage = useMemo(() => {
+    switch (sortBy) {
+      case "taste":
+        return personalised
+          ? "Ordinati per vicinanza ai tuoi gusti e voto complessivo."
+          : "Ordinati per voto complessivo. Segna i film visti o descrivi i tuoi gusti nel profilo per un ordine più personale.";
+      case "rating":
+        return "Ordinati per voto medio degli spettatori su TMDB.";
+      case "date":
+        return listMode === "upcoming"
+          ? "Ordinati per data di arrivo nelle sale (dal più imminente)."
+          : "Ordinati per data di uscita al cinema (dalle novità più recenti).";
+      case "popular":
+        return "Ordinati per numero di voti e popolarità globale.";
+    }
+  }, [sortBy, personalised, listMode]);
+
+  const orderNoteIcon = useMemo(() => {
+    switch (sortBy) {
+      case "taste":
+        return personalised ? "user-check" : "star";
+      case "rating":
+        return "star";
+      case "date":
+        return "calendar";
+      case "popular":
+        return "trending-up";
+    }
+  }, [sortBy, personalised]);
 
   return (
     <ScrollView
@@ -236,7 +339,8 @@ export default function InTheatersScreen() {
       >
         {LIST_MODES.map(({ mode, label, icon }) => {
           const selected = listMode === mode;
-          const count = mode === "now" ? nowPlaying.length : upcoming.length;
+          const count =
+            mode === "now" ? rawNowPlaying.length : rawUpcoming.length;
           return (
             <Pressable
               key={mode}
@@ -295,16 +399,61 @@ export default function InTheatersScreen() {
         })}
       </View>
 
+      <View style={styles.sortSection}>
+        <Text style={[styles.sortLabel, { color: colors.mutedForeground }]}>
+          ORDINA PER
+        </Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.sortChips}
+        >
+          {SORT_OPTIONS.map(({ mode, label, icon }) => {
+            const selected = sortBy === mode;
+            return (
+              <Pressable
+                key={mode}
+                testID={`in-theaters-sort-${mode}`}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                onPress={() => setSortBy(mode)}
+                style={({ pressed }) => [
+                  styles.sortChip,
+                  {
+                    backgroundColor: selected ? colors.accent : colors.card,
+                    borderColor: selected ? colors.primary : colors.border,
+                    opacity: pressed ? 0.75 : 1,
+                  },
+                ]}
+              >
+                <Feather
+                  name={icon}
+                  size={12}
+                  color={selected ? colors.primary : colors.mutedForeground}
+                />
+                <Text
+                  style={[
+                    styles.sortChipText,
+                    {
+                      color: selected ? colors.primary : colors.mutedForeground,
+                      fontFamily: selected
+                        ? "Inter_600SemiBold"
+                        : "Inter_500Medium",
+                    },
+                  ]}
+                >
+                  {label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </View>
+
       <View style={styles.orderNote}>
-        <Feather
-          name={personalised ? "user-check" : "star"}
-          size={12}
-          color={colors.primary}
-        />
+        <Feather name={orderNoteIcon} size={12} color={colors.primary} />
         <Text style={[styles.orderText, { color: colors.mutedForeground }]}>
-          {personalised
-            ? "Ordinati per vicinanza ai tuoi gusti e voto complessivo."
-            : "Ordinati per voto complessivo. Segna i film visti o descrivi i tuoi gusti nel profilo per un ordine più personale."}
+          {orderNoteMessage}
         </Text>
       </View>
 
@@ -413,6 +562,34 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   segmentCountText: { fontSize: 10, fontFamily: "Inter_700Bold" },
+  sortSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  sortLabel: {
+    fontSize: 9,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 1.2,
+  },
+  sortChips: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 2,
+  },
+  sortChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  sortChipText: {
+    fontSize: 11,
+  },
   orderNote: {
     flexDirection: "row",
     alignItems: "center",
@@ -430,4 +607,3 @@ const styles = StyleSheet.create({
   },
   statusText: { fontSize: 12, lineHeight: 18, textAlign: "center" },
 });
-
