@@ -158,18 +158,28 @@ export default function HomeScreen() {
     ],
   );
 
+  const watchedIds = useMemo(
+    () => new Set(preferences.watchedMovies.map((movie) => movie.id)),
+    [preferences.watchedMovies],
+  );
+  const savedIds = useMemo(
+    () => new Set(preferences.savedMovies.map((movie) => movie.id)),
+    [preferences.savedMovies],
+  );
   const excludedIds = useMemo(
     () =>
       [
         ...preferences.shownMovieIds,
         ...preferences.dismissedMovieIds,
         ...preferences.watchedMovies.map((movie) => movie.id),
+        ...preferences.savedMovies.map((movie) => movie.id),
       ]
         .slice(-900)
         .join(","),
     [
       preferences.dismissedMovieIds,
       preferences.watchedMovies,
+      preferences.savedMovies,
       preferences.shownMovieIds,
     ],
   );
@@ -240,7 +250,12 @@ export default function HomeScreen() {
 
     const existingIds = new Set(feedMoviesRef.current.map((movie) => movie.id));
     const additions = response.results
-      .filter((movie) => !existingIds.has(movie.id))
+      .filter(
+        (movie) =>
+          !existingIds.has(movie.id) &&
+          !watchedIds.has(movie.id) &&
+          !savedIds.has(movie.id),
+      )
       .slice(0, Math.max(0, MAX_VISIBLE_MOVIES - feedMoviesRef.current.length));
     if (additions.length === 0) return;
 
@@ -248,7 +263,17 @@ export default function HomeScreen() {
     feedMoviesRef.current = nextMovies;
     setFeedMovies(nextMovies);
     markShown(additions.map((movie) => movie.id));
-  }, [markShown, page, recommendations.data]);
+  }, [markShown, page, recommendations.data, savedIds, watchedIds]);
+
+  useEffect(() => {
+    const filtered = feedMoviesRef.current.filter(
+      (movie) => !watchedIds.has(movie.id) && !savedIds.has(movie.id),
+    );
+    if (filtered.length !== feedMoviesRef.current.length) {
+      feedMoviesRef.current = filtered;
+      setFeedMovies(filtered);
+    }
+  }, [watchedIds, savedIds]);
 
   useEffect(() => {
     if (recommendations.isError) requestedPageRef.current = null;
@@ -600,8 +625,9 @@ export default function HomeScreen() {
               <Text
                 style={[styles.emptyBody, { color: colors.mutedForeground }]}
               >
-                I film già mostrati o segnati come visti sono esclusi. Prova un
-                altro gruppo o azzera la cronologia dei consigli.
+                I film già mostrati, salvati da guardare o segnati come visti
+                sono esclusi. Prova un altro gruppo o azzera la cronologia dei
+                consigli.
               </Text>
               <Pressable
                 accessibilityRole="button"

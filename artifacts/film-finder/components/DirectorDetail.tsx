@@ -46,7 +46,7 @@ export function DirectorDetail({ director, onBack }: DirectorDetailProps) {
   } = usePreferences();
 
   const filmography = useQuery({
-    queryKey: ["director-filmography", directorId],
+    queryKey: ["director-filmography-v2", directorId],
     queryFn: () => loadDirectorFilmography(directorId),
     staleTime: 12 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -55,8 +55,11 @@ export function DirectorDetail({ director, onBack }: DirectorDetailProps) {
 
   const [onlyAvailable, setOnlyAvailable] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>("recent");
+  const [bioExpanded, setBioExpanded] = useState(false);
 
   const allMovies = filmography.data?.movies ?? [];
+  const signatureMovie = filmography.data?.signatureMovie ?? null;
+
   const providerIds = useMemo(
     () => preferences.selectedProviders.map((provider) => provider.id),
     [preferences.selectedProviders],
@@ -99,7 +102,16 @@ export function DirectorDetail({ director, onBack }: DirectorDetailProps) {
     }
     return sorted;
   }, [allMovies, availability.data, onlyAvailable, sortMode]);
-  const movieCredits = useMovieCredits(movies.map((movie) => movie.id));
+
+  const creditMovieIds = useMemo(() => {
+    const ids = movies.map((movie) => movie.id);
+    if (signatureMovie && !ids.includes(signatureMovie.id)) {
+      return [signatureMovie.id, ...ids];
+    }
+    return ids;
+  }, [movies, signatureMovie]);
+
+  const movieCredits = useMovieCredits(creditMovieIds);
   const watchedMovieIds = useMemo(
     () => new Set(preferences.watchedMovies.map((movie) => movie.id)),
     [preferences.watchedMovies],
@@ -109,12 +121,33 @@ export function DirectorDetail({ director, onBack }: DirectorDetailProps) {
     [preferences.savedMovies],
   );
 
+  const watchedCount = useMemo(
+    () => allMovies.filter((movie) => watchedMovieIds.has(movie.id)).length,
+    [allMovies, watchedMovieIds],
+  );
+  const progressPercent =
+    allMovies.length > 0
+      ? Math.round((watchedCount / allMovies.length) * 100)
+      : 0;
+
   const name = filmography.data?.director.name ?? director.name ?? "Regista";
   const profilePath =
     filmography.data?.director.profilePath ?? director.profilePath ?? null;
   const profileUri = profilePath
     ? `https://image.tmdb.org/t/p/w185${profilePath}`
     : null;
+
+  const averageRating = filmography.data?.director.averageRating ?? null;
+  const placeOfBirth = filmography.data?.director.placeOfBirth ?? null;
+  const birthYear = filmography.data?.director.birthday?.slice(0, 4) ?? null;
+  const deathYear = filmography.data?.director.deathday?.slice(0, 4) ?? null;
+  const lifespanLabel = birthYear
+    ? deathYear
+      ? `${birthYear} – ${deathYear}`
+      : `Classe ${birthYear}`
+    : null;
+  const biography = filmography.data?.director.biography ?? null;
+  const hasLongBio = Boolean(biography && biography.length > 180);
 
   return (
     <View style={styles.content}>
@@ -154,13 +187,179 @@ export function DirectorDetail({ director, onBack }: DirectorDetailProps) {
         )}
         <View style={styles.headerCopy}>
           <Text style={[styles.name, { color: colors.foreground }]}>{name}</Text>
-          <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-            {filmography.data
-              ? `${allMovies.length} ${allMovies.length === 1 ? "film diretto" : "film diretti"}`
-              : "Regista"}
-          </Text>
+          <View style={styles.statsBadges}>
+            <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
+              {filmography.data
+                ? `${allMovies.length} ${allMovies.length === 1 ? "film diretto" : "film diretti"}`
+                : "Regista"}
+            </Text>
+            {averageRating ? (
+              <View
+                style={[
+                  styles.ratingPill,
+                  { backgroundColor: colors.accent, borderColor: colors.border },
+                ]}
+              >
+                <Feather name="star" size={11} color={colors.primary} />
+                <Text
+                  style={[styles.ratingPillText, { color: colors.foreground }]}
+                >
+                  {averageRating.toFixed(1)} media voto
+                </Text>
+              </View>
+            ) : null}
+          </View>
+          {placeOfBirth || lifespanLabel ? (
+            <View style={styles.metaInfoList}>
+              {placeOfBirth ? (
+                <View style={styles.metaInfoRow}>
+                  <Feather
+                    name="map-pin"
+                    size={11}
+                    color={colors.mutedForeground}
+                  />
+                  <Text
+                    numberOfLines={1}
+                    style={[
+                      styles.metaInfoText,
+                      { color: colors.mutedForeground },
+                    ]}
+                  >
+                    {placeOfBirth}
+                  </Text>
+                </View>
+              ) : null}
+              {lifespanLabel ? (
+                <View style={styles.metaInfoRow}>
+                  <Feather
+                    name="calendar"
+                    size={11}
+                    color={colors.mutedForeground}
+                  />
+                  <Text
+                    style={[
+                      styles.metaInfoText,
+                      { color: colors.mutedForeground },
+                    ]}
+                  >
+                    {lifespanLabel}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          ) : null}
         </View>
       </View>
+
+      {biography ? (
+        <View
+          style={[
+            styles.bioBox,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <Text
+            numberOfLines={bioExpanded ? undefined : 3}
+            style={[styles.bioText, { color: colors.mutedForeground }]}
+          >
+            {biography}
+          </Text>
+          {hasLongBio ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setBioExpanded((prev) => !prev)}
+              style={({ pressed }) => [
+                styles.bioToggle,
+                { opacity: pressed ? 0.65 : 1 },
+              ]}
+            >
+              <Text style={[styles.bioToggleText, { color: colors.primary }]}>
+                {bioExpanded ? "Mostra meno" : "Leggi tutto"}
+              </Text>
+              <Feather
+                name={bioExpanded ? "chevron-up" : "chevron-down"}
+                size={13}
+                color={colors.primary}
+              />
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
+
+      {allMovies.length > 0 ? (
+        <View
+          style={[
+            styles.progressCard,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <View style={styles.progressHeader}>
+            <View style={styles.progressTitleRow}>
+              <Feather name="check-circle" size={14} color={colors.primary} />
+              <Text
+                style={[styles.progressTitle, { color: colors.foreground }]}
+              >
+                Filmografia completata
+              </Text>
+            </View>
+            <Text style={[styles.progressCount, { color: colors.primary }]}>
+              {watchedCount}/{allMovies.length} visti ({progressPercent}%)
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.progressTrack,
+              { backgroundColor: colors.secondary },
+            ]}
+          >
+            <View
+              style={[
+                styles.progressFill,
+                {
+                  backgroundColor: colors.primary,
+                  width: `${Math.min(100, progressPercent)}%`,
+                },
+              ]}
+            />
+          </View>
+        </View>
+      ) : null}
+
+      {signatureMovie ? (
+        <View
+          style={[
+            styles.signatureSection,
+            { backgroundColor: colors.accent, borderColor: colors.border },
+          ]}
+        >
+          <View style={styles.signatureHeader}>
+            <Feather name="award" size={15} color={colors.primary} />
+            <View style={styles.signatureCopy}>
+              <Text style={[styles.signatureEyebrow, { color: colors.primary }]}>
+                DA DOVE INIZIARE
+              </Text>
+              <Text
+                style={[styles.signatureTitle, { color: colors.foreground }]}
+              >
+                Il film simbolo di {name}
+              </Text>
+            </View>
+          </View>
+          <FilmCard
+            movie={signatureMovie}
+            credits={movieCredits.creditsByMovieId.get(signatureMovie.id)}
+            creditsLoading={
+              movieCredits.isFetching &&
+              !movieCredits.creditsByMovieId.has(signatureMovie.id)
+            }
+            isWatched={watchedMovieIds.has(signatureMovie.id)}
+            isSaved={savedMovieIds.has(signatureMovie.id)}
+            onToggleWatched={toggleWatchedMovie}
+            onToggleSave={toggleSavedMovie}
+            badge="Film simbolo"
+          />
+        </View>
+      ) : null}
 
       <Text style={[styles.hint, { color: colors.mutedForeground }]}>
         Tutti i suoi film, anche quelli che non sono sui tuoi servizi. Tocca
@@ -306,7 +505,118 @@ const styles = StyleSheet.create({
   portraitFallback: { alignItems: "center", justifyContent: "center" },
   headerCopy: { flex: 1, gap: 6 },
   name: { fontSize: 22, lineHeight: 27, fontFamily: "Inter_700Bold" },
+  statsBadges: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
+  },
   subtitle: { fontSize: 12 },
+  ratingPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  ratingPillText: {
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+  },
+  metaInfoList: {
+    gap: 3,
+    marginTop: 2,
+  },
+  metaInfoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  metaInfoText: {
+    flex: 1,
+    fontSize: 11,
+  },
+  bioBox: {
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 12,
+    gap: 8,
+  },
+  bioText: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  bioToggle: {
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  bioToggleText: {
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+  },
+  progressCard: {
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 12,
+    gap: 9,
+  },
+  progressHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  progressTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  progressTitle: {
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
+  },
+  progressCount: {
+    fontSize: 11,
+    fontFamily: "Inter_700Bold",
+  },
+  progressTrack: {
+    height: 7,
+    borderRadius: 999,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    borderRadius: 999,
+  },
+  signatureSection: {
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: 12,
+    gap: 10,
+  },
+  signatureHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 2,
+  },
+  signatureCopy: {
+    flex: 1,
+    gap: 1,
+  },
+  signatureEyebrow: {
+    fontSize: 9,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 1.4,
+  },
+  signatureTitle: {
+    fontSize: 13,
+    fontFamily: "Inter_700Bold",
+  },
   hint: { fontSize: 11, lineHeight: 16 },
   controls: { gap: 10 },
   sortRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },

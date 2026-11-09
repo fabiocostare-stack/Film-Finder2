@@ -108,6 +108,10 @@ type TmdbMovieDetails = TmdbMovie & {
 type TmdbPersonDetails = {
   name?: string;
   profile_path?: string | null;
+  biography?: string | null;
+  birthday?: string | null;
+  deathday?: string | null;
+  place_of_birth?: string | null;
 };
 
 type TmdbPersonMovieCredits = {
@@ -802,7 +806,14 @@ async function loadDirectorPicks(
 }
 
 export type DirectorFilmography = {
-  director: DirectorProfile;
+  director: DirectorProfile & {
+    biography: string | null;
+    birthday: string | null;
+    deathday: string | null;
+    placeOfBirth: string | null;
+    averageRating: number | null;
+  };
+  signatureMovie: Movie | null;
   movies: Movie[];
 };
 
@@ -827,7 +838,51 @@ export async function loadDirectorFilmography(
       unique.set(movie.id, movie);
     }
   }
-  const movies = [...unique.values()]
+  const rawMovies = [...unique.values()];
+
+  const ratedPool = rawMovies.filter(
+    (movie) => (movie.vote_average ?? 0) > 0 && (movie.vote_count ?? 0) >= 20,
+  );
+  const fallbackPool =
+    ratedPool.length > 0
+      ? ratedPool
+      : rawMovies.filter((movie) => (movie.vote_average ?? 0) > 0);
+  const averageRating =
+    fallbackPool.length > 0
+      ? Number(
+          (
+            fallbackPool.reduce(
+              (sum, movie) => sum + (movie.vote_average ?? 0),
+              0,
+            ) / fallbackPool.length
+          ).toFixed(1),
+        )
+      : null;
+
+  const signatureCandidates =
+    rawMovies.filter(
+      (movie) => (movie.vote_average ?? 0) > 0 && (movie.vote_count ?? 0) >= 50,
+    ).length > 0
+      ? rawMovies.filter(
+          (movie) =>
+            (movie.vote_average ?? 0) > 0 && (movie.vote_count ?? 0) >= 50,
+        )
+      : fallbackPool;
+
+  const signatureScore = (movie: TmdbMovie) =>
+    (movie.vote_average ?? 0) +
+    Math.min(1.4, Math.log10(Math.max(1, movie.vote_count ?? 1)) * 0.28);
+
+  const bestRaw =
+    signatureCandidates.length > 0
+      ? [...signatureCandidates].sort(
+          (a, b) =>
+            signatureScore(b) - signatureScore(a) ||
+            (b.vote_count ?? 0) - (a.vote_count ?? 0),
+        )[0]
+      : null;
+
+  const movies = rawMovies
     .sort((a, b) => {
       const dateA = a.release_date || "0000";
       const dateB = b.release_date || "0000";
@@ -835,12 +890,19 @@ export async function loadDirectorFilmography(
     })
     .slice(0, 80)
     .map(mapMovie);
+
   return {
     director: {
       id: directorId,
       name: person.name?.trim() || "Regista",
       profilePath: person.profile_path ?? null,
+      biography: person.biography?.trim() || null,
+      birthday: person.birthday?.trim() || null,
+      deathday: person.deathday?.trim() || null,
+      placeOfBirth: person.place_of_birth?.trim() || null,
+      averageRating,
     },
+    signatureMovie: bestRaw ? mapMovie(bestRaw) : null,
     movies,
   };
 }

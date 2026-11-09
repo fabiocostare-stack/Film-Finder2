@@ -51,12 +51,22 @@ export function DirectorDiscovery({ onOpenDirector }: DirectorDiscoveryProps) {
           .slice(0, 200)
           .map((movie) => movie.id)
           .join(",") || undefined,
+      followedDirectorIds:
+        preferences.followedDirectors
+          .slice(0, 40)
+          .map((director) => director.id)
+          .join(",") || undefined,
       excludeMovieIds:
-        preferences.dismissedMovieIds.slice(-200).join(",") || undefined,
+        [
+          ...preferences.dismissedMovieIds.slice(-200),
+          ...preferences.savedMovies.slice(0, 200).map((movie) => movie.id),
+        ].join(",") || undefined,
     }),
     [
       rotation,
       preferences.dismissedMovieIds,
+      preferences.followedDirectors,
+      preferences.savedMovies,
       preferences.selectedProviders,
       preferences.watchedMovies,
     ],
@@ -110,6 +120,9 @@ export function DirectorDiscovery({ onOpenDirector }: DirectorDiscoveryProps) {
           : item.source === "similar"
             ? "Affini ai film che hai visto"
             : "Da un film molto apprezzato";
+    const visibleMovies = item.movies.filter(
+      (movie) => !watchedMovieIds.has(movie.id) && !savedMovieIds.has(movie.id),
+    );
 
     return (
       <View
@@ -163,9 +176,9 @@ export function DirectorDiscovery({ onOpenDirector }: DirectorDiscoveryProps) {
           </Pressable>
         </View>
 
-        {item.movies.length > 0 ? (
+        {visibleMovies.length > 0 ? (
           <View style={styles.movieList}>
-            {item.movies.map((movie) => (
+            {visibleMovies.map((movie) => (
               <FilmCard
                 key={movie.id}
                 movie={movie}
@@ -194,8 +207,8 @@ export function DirectorDiscovery({ onOpenDirector }: DirectorDiscoveryProps) {
             <Text
               style={[styles.noMoviesText, { color: colors.mutedForeground }]}
             >
-              Al momento non trovo film inediti di questo regista sui tuoi
-              servizi.
+              Al momento non trovo altri film non ancora visti o salvati di
+              questo regista sui tuoi servizi.
             </Text>
           </View>
         )}
