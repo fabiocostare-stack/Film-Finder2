@@ -68,18 +68,19 @@ export function ContinentFilms({ region, onBack }: Props) {
             {GROUP_META[group]?.flag ?? "🏳️"} {group}
           </Text>
           {areas.map((country) => (
-            <Pressable
-              key={country.id}
-              testID={`continent-film-${country.id}`}
-              accessibilityRole="button"
-              accessibilityLabel={country.name}
-              onPress={() => {}}
-              style={styles.countryRow}
-            >
-              <Text style={styles.countryFlag}>{country.flag}</Text>
-              <Text style={[styles.countryName, { color: colors.foreground }]}>
-                {country.name}
-              </Text>
+            <View key={country.id} style={styles.countryBlock}>
+              <Pressable
+                testID={`continent-film-${country.id}`}
+                accessibilityRole="button"
+                accessibilityLabel={country.name}
+                onPress={() => {}}
+                style={styles.countryRow}
+              >
+                <Text style={styles.countryFlag}>{country.flag}</Text>
+                <Text style={[styles.countryName, { color: colors.foreground }]}>
+                  {country.name}
+                </Text>
+              </Pressable>
               <View style={styles.filmsList}>
                 {country.films.map((film) => (
                   <Text
@@ -90,24 +91,25 @@ export function ContinentFilms({ region, onBack }: Props) {
                   </Text>
                 ))}
               </View>
-            </Pressable>
+            </View>
           ))}
         </View>
       ))}
 
       {singles.map((country) => (
-        <Pressable
-          key={country.id}
-          testID={`continent-film-${country.id}`}
-          accessibilityRole="button"
-          accessibilityLabel={country.name}
-          onPress={() => {}}
-          style={styles.countryRow}
-        >
-          <Text style={styles.countryFlag}>{country.flag}</Text>
-          <Text style={[styles.countryName, { color: colors.foreground }]}>
-            {country.name}
-          </Text>
+        <View key={country.id} style={styles.countryBlock}>
+          <Pressable
+            testID={`continent-film-${country.id}`}
+            accessibilityRole="button"
+            accessibilityLabel={country.name}
+            onPress={() => {}}
+            style={styles.countryRow}
+          >
+            <Text style={styles.countryFlag}>{country.flag}</Text>
+            <Text style={[styles.countryName, { color: colors.foreground }]}>
+              {country.name}
+            </Text>
+          </Pressable>
           <View style={styles.filmsList}>
             {country.films.map((film) => (
               <Text
@@ -118,7 +120,7 @@ export function ContinentFilms({ region, onBack }: Props) {
               </Text>
             ))}
           </View>
-        </Pressable>
+        </View>
       ))}
     </ScrollView>
   );
@@ -160,16 +162,15 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_700Bold",
     marginBottom: 4,
   },
+  countryBlock: { gap: 4 },
   countryRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
     paddingVertical: 6,
-    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   countryFlag: { fontSize: 20 },
   countryName: {
-    flex: 1,
     fontSize: 15,
     fontFamily: "Inter_600SemiBold",
   },
