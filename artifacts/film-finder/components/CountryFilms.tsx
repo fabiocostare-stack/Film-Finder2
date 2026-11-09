@@ -8,11 +8,7 @@ import {
   View,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import {
-  loadMoviesOnProviders,
-  resolveMoviesByTitle,
-  type Movie,
-} from "@workspace/api-client-react";
+import { loadMoviesOnProviders } from "@workspace/api-client-react";
 import {
   CatalogNotice,
   getCatalogErrorMessage,
@@ -26,6 +22,11 @@ import { usePreferences } from "@/context/PreferencesContext";
 import { useColors } from "@/hooks/useColors";
 import { useMovieCredits } from "@/hooks/useMovieCredits";
 import { setTravelCount } from "@/lib/travelCounts";
+import {
+  countryQueryKey,
+  resolveCountryFilms,
+  type ResolvedFilm,
+} from "@/lib/travelResolve";
 
 type CountryFilmsProps = {
   country: TravelCountry;
@@ -43,8 +44,6 @@ const VIEW_LABEL: Record<TravelFilm["view"], string> = {
   esterno: "Sguardo da fuori",
 };
 
-type ResolvedFilm = { film: TravelFilm; movie: Movie };
-
 export function CountryFilms({ country, onBack }: CountryFilmsProps) {
   const colors = useColors();
   const { preferences, toggleWatchedMovie, toggleSavedMovie } =
@@ -53,24 +52,8 @@ export function CountryFilms({ country, onBack }: CountryFilmsProps) {
   const [collapsed, setCollapsed] = useState<Set<number>>(() => new Set());
 
   const resolved = useQuery({
-    queryKey: ["travel-country-v3", country.id],
-    queryFn: async (): Promise<{ found: ResolvedFilm[]; missing: string[] }> => {
-      const movies = await resolveMoviesByTitle(
-        country.films.map((film) => ({ title: film.title, year: film.year })),
-      );
-      const found: ResolvedFilm[] = [];
-      const missing: string[] = [];
-      const seen = new Set<number>();
-      country.films.forEach((film, index) => {
-        const movie = movies[index];
-        if (!movie) missing.push(`${film.title} (${film.year})`);
-        else if (!seen.has(movie.id)) {
-          seen.add(movie.id);
-          found.push({ film, movie });
-        }
-      });
-      return { found, missing };
-    },
+    queryKey: countryQueryKey(country.id),
+    queryFn: () => resolveCountryFilms(country),
     staleTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
     retry: false,
