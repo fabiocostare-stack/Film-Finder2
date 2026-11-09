@@ -7,7 +7,7 @@ export type ResolvedCountry = { found: ResolvedFilm[]; missing: string[] };
 /** Chiave di cache condivisa: la pagina del paese e l'elenco del continente
  *  usano gli stessi risultati. */
 export const countryQueryKey = (countryId: string) =>
-  ["travel-country-v3", countryId] as const;
+  ["travel-country-v4", countryId] as const;
 
 /** Cerca su TMDB i film di una scheda: trovati e non trovati. */
 export async function resolveCountryFilms(

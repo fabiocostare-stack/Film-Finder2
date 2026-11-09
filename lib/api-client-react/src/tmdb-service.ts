@@ -918,8 +918,35 @@ export async function resolveMoviesByTitle(
   }): Promise<Movie | null> => {
     const yearOf = (movie: TmdbMovie) =>
       Number((movie.release_date ?? "").slice(0, 4)) || 0;
+    const cleanStr = (s?: string) =>
+      s ? s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim() : "";
+
+    const titleMatchScore = (targetTitle: string, movie: TmdbMovie): number => {
+      const target = cleanStr(targetTitle);
+      const t = cleanStr(movie.title);
+      const ot = cleanStr(movie.original_title);
+
+      if (t === target || ot === target) return 1000;
+      if (
+        t.startsWith(`${target} `) ||
+        ot.startsWith(`${target} `) ||
+        t.endsWith(` ${target}`) ||
+        ot.endsWith(` ${target}`)
+      ) {
+        return 700 - Math.min(300, Math.abs(t.length - target.length));
+      }
+      const wordsT = t.split(" ");
+      const wordsOT = ot.split(" ");
+      if (wordsT.includes(target) || wordsOT.includes(target)) {
+        return 400 - Math.min(300, Math.abs(t.length - target.length));
+      }
+      if (t.includes(target) || ot.includes(target)) return 50;
+      return 0;
+    };
+
     // I film sono scelti a mano: basta trovare quello giusto per titolo e anno
-    // (con un po' di tolleranza, perché l'anno di uscita varia tra festival e sale).
+    // dando priorità assoluta alla corrispondenza del titolo per evitare che
+    // film con parole simili (es. LEGO DC... Cosmic Clash) scavalchino il titolo esatto.
     const pick = (
       results: TmdbMovie[],
       tolerance: number,
@@ -929,11 +956,16 @@ export async function resolveMoviesByTitle(
           Boolean(movie.release_date) &&
           Math.abs(yearOf(movie) - item.year) <= tolerance,
       );
-      close.sort(
-        (a, b) =>
-          Math.abs(yearOf(a) - item.year) - Math.abs(yearOf(b) - item.year) ||
-          (b.vote_count ?? 0) - (a.vote_count ?? 0),
-      );
+      if (close.length === 0) return null;
+      close.sort((a, b) => {
+        const scoreDiff =
+          titleMatchScore(item.title, b) - titleMatchScore(item.title, a);
+        if (scoreDiff !== 0) return scoreDiff;
+        const yearDiff =
+          Math.abs(yearOf(a) - item.year) - Math.abs(yearOf(b) - item.year);
+        if (yearDiff !== 0) return yearDiff;
+        return (b.vote_count ?? 0) - (a.vote_count ?? 0);
+      });
       return close[0] ?? null;
     };
     const search = (params: Record<string, string | number>) =>
