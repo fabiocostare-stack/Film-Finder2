@@ -11,7 +11,7 @@ import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CountryFilms } from "@/components/CountryFilms";
 import { ContinentFilms } from "@/components/ContinentFilms";
-import { TravelMap } from "@/components/TravelMap";
+import { TravelContinents } from "@/components/TravelContinents";
 import {
   TRAVEL_COUNTRIES,
   type TravelCountry,
@@ -65,8 +65,8 @@ export default function TravelScreen() {
   const savedY = useRef(0);
   const savedGroupY = useRef(0);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
-  const [mode, setMode] = useState<"map" | "list">("map");
-  const [mapRegion, setMapRegion] = useState<string | null>(null);
+  const [mode, setMode] = useState<"continents" | "list">("continents");
+  const [selectedContinent, setSelectedContinent] = useState<string>("Europa");
   const [continentAll, setContinentAll] = useState<string | null>(null);
 
   const blocksByRegion = useMemo(
@@ -266,7 +266,7 @@ export default function TravelScreen() {
           </Text>
 
           <View style={styles.modeBar}>
-            {(["map", "list"] as const).map((item) => (
+            {(["continents", "list"] as const).map((item) => (
               <Pressable
                 key={item}
                 testID={`travel-mode-${item}`}
@@ -283,7 +283,7 @@ export default function TravelScreen() {
                 ]}
               >
                 <Feather
-                  name={item === "map" ? "globe" : "list"}
+                  name={item === "continents" ? "globe" : "list"}
                   size={14}
                   color={mode === item ? colors.primaryForeground : colors.foreground}
                 />
@@ -293,16 +293,16 @@ export default function TravelScreen() {
                     { color: mode === item ? colors.primaryForeground : colors.foreground },
                   ]}
                 >
-                  {item === "map" ? "Mappa" : "Elenco"}
+                  {item === "continents" ? "Continenti" : "Elenco"}
                 </Text>
               </Pressable>
             ))}
           </View>
 
-          {mode === "map" ? (
-            <TravelMap
-              region={mapRegion}
-              onRegionChange={setMapRegion}
+          {mode === "continents" ? (
+            <TravelContinents
+              region={selectedContinent}
+              onRegionChange={setSelectedContinent}
               onSelectTarget={selectFromMap}
               onRegionAll={setContinentAll}
             />
