@@ -87,7 +87,7 @@ export function ContinentFilms({ region, onBack }: Props) {
                   {country.group ? `${country.group} · ` : ""}
                   {country.name}
                 </Text>
-                <Text style={[styles.meta, { color: colors.primary }]}>
+                <Text style={[styles.metaSmall, { color: colors.primary }]}>
                   {known !== undefined
                     ? `${known} film`
                     : `Fino a ${country.films.length} film`}
@@ -95,7 +95,7 @@ export function ContinentFilms({ region, onBack }: Props) {
               </View>
               <Feather
                 name={isOpen ? "chevron-up" : "chevron-down"}
-                size={20}
+                size={17}
                 color={colors.mutedForeground}
               />
             </Pressable>
@@ -200,19 +200,21 @@ const styles = StyleSheet.create({
   eyebrow: { marginTop: 6, fontSize: 11, fontFamily: "Inter_700Bold", letterSpacing: 2.4 },
   title: { marginTop: -5, fontSize: 32, letterSpacing: -1, fontFamily: "Inter_700Bold" },
   count: { fontSize: 13, lineHeight: 19 },
-  block: { gap: 10 },
+  block: { gap: 8 },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 10,
     borderWidth: 1,
-    borderRadius: 16,
-    padding: 12,
+    borderRadius: 12,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
   },
-  flag: { fontSize: 28 },
-  headerCopy: { flex: 1, gap: 2 },
-  name: { fontSize: 15, fontFamily: "Inter_700Bold" },
+  flag: { fontSize: 20 },
+  headerCopy: { flex: 1, gap: 0 },
+  name: { fontSize: 13, fontFamily: "Inter_700Bold" },
   meta: { fontSize: 12, lineHeight: 17 },
+  metaSmall: { fontSize: 11, lineHeight: 14 },
   loading: { alignItems: "center", gap: 8, paddingVertical: 16 },
   films: { gap: 14 },
 });
