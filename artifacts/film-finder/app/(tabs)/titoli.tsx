@@ -46,6 +46,58 @@ type RecommendationProfile = {
   taste: string;
 };
 
+type MoodKey =
+  | "all"
+  | "thriller"
+  | "comedy"
+  | "drama"
+  | "scifi"
+  | "action"
+  | "romance"
+  | "horror"
+  | "animation";
+
+const MOOD_OPTIONS: Array<{
+  key: MoodKey;
+  label: string;
+  icon:
+    | "compass"
+    | "eye"
+    | "smile"
+    | "feather"
+    | "cpu"
+    | "zap"
+    | "heart"
+    | "moon"
+    | "film";
+  genreIds: number[];
+}> = [
+  { key: "all", label: "Per te", icon: "compass", genreIds: [] },
+  {
+    key: "thriller",
+    label: "Thriller & Giallo",
+    icon: "eye",
+    genreIds: [53, 9648, 80],
+  },
+  { key: "comedy", label: "Commedia", icon: "smile", genreIds: [35] },
+  { key: "drama", label: "Dramma", icon: "feather", genreIds: [18] },
+  {
+    key: "scifi",
+    label: "Sci-Fi & Fantasy",
+    icon: "cpu",
+    genreIds: [878, 14],
+  },
+  {
+    key: "action",
+    label: "Azione & Avventura",
+    icon: "zap",
+    genreIds: [28, 12],
+  },
+  { key: "romance", label: "Romantico", icon: "heart", genreIds: [10749] },
+  { key: "horror", label: "Horror", icon: "moon", genreIds: [27] },
+  { key: "animation", label: "Animazione", icon: "film", genreIds: [16] },
+];
+
 function getPreferredGenres(movies: Movie[]): number[] {
   const weights = new Map<number, number>();
   movies.slice(0, 60).forEach((movie, index) => {
@@ -117,6 +169,12 @@ export default function HomeScreen() {
     setDraft("");
     setSubmitted("");
   };
+  const [selectedMood, setSelectedMood] = useState<MoodKey>("all");
+  const activeMood = useMemo(
+    () =>
+      MOOD_OPTIONS.find((item) => item.key === selectedMood) ?? MOOD_OPTIONS[0],
+    [selectedMood],
+  );
   const preferredGenres = useMemo(
     () => getPreferredGenres(preferences.watchedMovies),
     [preferences.watchedMovies],
@@ -126,14 +184,21 @@ export default function HomeScreen() {
       providerIds: preferences.selectedProviders
         .map((provider) => provider.id)
         .join(","),
-      seedMovieIds: preferences.watchedMovies
-        .slice(0, 4)
-        .map((movie) => movie.id)
-        .join(","),
-      genreIds: preferredGenres.join(","),
-      taste: preferences.taste.trim(),
+      seedMovieIds:
+        activeMood.key === "all"
+          ? preferences.watchedMovies
+              .slice(0, 4)
+              .map((movie) => movie.id)
+              .join(",")
+          : "",
+      genreIds:
+        activeMood.key === "all"
+          ? preferredGenres.join(",")
+          : activeMood.genreIds.join(","),
+      taste: activeMood.key === "all" ? preferences.taste.trim() : "",
     }),
     [
+      activeMood,
       preferredGenres,
       preferences.selectedProviders,
       preferences.taste,
@@ -150,11 +215,13 @@ export default function HomeScreen() {
           .sort((a, b) => a - b),
         preferences.taste.trim(),
         preferences.historyRevision,
+        selectedMood,
       ]),
     [
       preferences.historyRevision,
       preferences.selectedProviders,
       preferences.taste,
+      selectedMood,
     ],
   );
 
@@ -169,7 +236,7 @@ export default function HomeScreen() {
   const excludedIds = useMemo(
     () =>
       [
-        ...preferences.shownMovieIds,
+        ...(selectedMood === "all" ? preferences.shownMovieIds : []),
         ...preferences.dismissedMovieIds,
         ...preferences.watchedMovies.map((movie) => movie.id),
         ...preferences.savedMovies.map((movie) => movie.id),
@@ -181,6 +248,7 @@ export default function HomeScreen() {
       preferences.watchedMovies,
       preferences.savedMovies,
       preferences.shownMovieIds,
+      selectedMood,
     ],
   );
   const startNewFeed = useCallback(() => {
@@ -262,8 +330,10 @@ export default function HomeScreen() {
     const nextMovies = [...feedMoviesRef.current, ...additions];
     feedMoviesRef.current = nextMovies;
     setFeedMovies(nextMovies);
-    markShown(additions.map((movie) => movie.id));
-  }, [markShown, page, recommendations.data, savedIds, watchedIds]);
+    if (selectedMood === "all") {
+      markShown(additions.map((movie) => movie.id));
+    }
+  }, [markShown, page, recommendations.data, savedIds, selectedMood, watchedIds]);
 
   useEffect(() => {
     const filtered = feedMoviesRef.current.filter(
@@ -523,10 +593,63 @@ export default function HomeScreen() {
         </>
       ) : (
         <>
+          <View style={styles.moodSection}>
+            <Text style={[styles.moodLabel, { color: colors.mutedForeground }]}>
+              CHE SERATA È?
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.moodChips}
+            >
+              {MOOD_OPTIONS.map((option) => {
+                const selected = selectedMood === option.key;
+                return (
+                  <Pressable
+                    key={option.key}
+                    testID={`mood-chip-${option.key}`}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    onPress={() => setSelectedMood(option.key)}
+                    style={({ pressed }) => [
+                      styles.moodChip,
+                      {
+                        backgroundColor: selected ? colors.accent : colors.card,
+                        borderColor: selected ? colors.primary : colors.border,
+                        opacity: pressed ? 0.75 : 1,
+                      },
+                    ]}
+                  >
+                    <Feather
+                      name={option.icon}
+                      size={13}
+                      color={selected ? colors.primary : colors.mutedForeground}
+                    />
+                    <Text
+                      style={[
+                        styles.moodChipText,
+                        {
+                          color: selected
+                            ? colors.primary
+                            : colors.mutedForeground,
+                          fontFamily: selected
+                            ? "Inter_600SemiBold"
+                            : "Inter_500Medium",
+                        },
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+
           <View style={styles.sectionHeading}>
             <View>
               <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-                Scelti per te
+                {activeMood.key === "all" ? "Scelti per te" : activeMood.label}
               </Text>
               <Text
                 style={[
@@ -908,6 +1031,32 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     alignItems: "center",
     justifyContent: "center",
+  },
+  moodSection: {
+    gap: 8,
+  },
+  moodLabel: {
+    fontSize: 10,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 1.5,
+  },
+  moodChips: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 2,
+  },
+  moodChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  moodChipText: {
+    fontSize: 12,
   },
   sectionHeading: {
     flexDirection: "row",

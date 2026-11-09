@@ -58,6 +58,8 @@ export function FilmCard({
 }: FilmCardProps) {
   const colors = useColors();
   const [showAvailability, setShowAvailability] = useState<boolean>(false);
+  const [overviewExpanded, setOverviewExpanded] = useState<boolean>(false);
+  const overview = movie.overview?.trim() || null;
   const params: GetMovieAvailabilityParams = {
     movieId: movie.id,
     region: "IT",
@@ -207,6 +209,34 @@ export function FilmCard({
             </View>
           </View>
         )}
+
+        {overview ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              overviewExpanded
+                ? `Riduci la trama di ${movie.title}`
+                : `Espandi la trama di ${movie.title}`
+            }
+            onPress={() => setOverviewExpanded((value) => !value)}
+            style={({ pressed }) => [
+              styles.overviewBox,
+              { opacity: pressed ? 0.75 : 1 },
+            ]}
+          >
+            <Text
+              numberOfLines={overviewExpanded ? undefined : 2}
+              style={[styles.overviewText, { color: colors.mutedForeground }]}
+            >
+              {overview}
+            </Text>
+            {overview.length > 90 ? (
+              <Text style={[styles.overviewToggle, { color: colors.primary }]}>
+                {overviewExpanded ? "Mostra meno" : "Leggi trama"}
+              </Text>
+            ) : null}
+          </Pressable>
+        ) : null}
 
         {onOpenShowtimes ? (
           <Pressable
@@ -457,6 +487,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 7,
+  },
+  overviewBox: {
+    marginTop: 7,
+    gap: 3,
+  },
+  overviewText: {
+    fontSize: 10.5,
+    lineHeight: 15,
+  },
+  overviewToggle: {
+    fontSize: 10,
+    fontFamily: "Inter_600SemiBold",
   },
   showtimesButton: {
     marginTop: 8,
