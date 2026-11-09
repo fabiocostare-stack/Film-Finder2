@@ -1,7 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { TRAVEL_COUNTRIES, type TravelCountry } from "@/constants/travelFilms";
-import { GROUP_META } from "@/constants/travelGroups";
+import { TRAVEL_COUNTRIES } from "@/constants/travelFilms";
 import { useColors } from "@/hooks/useColors";
 
 type Props = {
@@ -41,7 +40,7 @@ export function ContinentFilms({ region, onBack }: Props) {
           TUTTI I FILM
         </Text>
         <Text style={[styles.title, { color: colors.foreground }]}>
-          {GROUP_META[region]?.flag ?? "🌍"} {region}
+          {region}
         </Text>
         <Text style={[styles.description, { color: colors.mutedForeground }]}>
           Non ci sono film disponibili per questa area.
@@ -49,23 +48,6 @@ export function ContinentFilms({ region, onBack }: Props) {
       </ScrollView>
     );
   }
-
-  // Raggruppa i paesi che hanno un gruppo (es. Italia → zone), gli altri restano singoli.
-  const groups = new Map<string, TravelCountry[]>();
-  const singles: TravelCountry[] = [];
-
-  for (const country of countries) {
-    if (country.group) {
-      if (!groups.has(country.group)) groups.set(country.group, []);
-      groups.get(country.group)!.push(country);
-    } else {
-      singles.push(country);
-    }
-  }
-
-  const sortedGroups = Array.from(groups.entries()).sort((a, b) =>
-    a[0].localeCompare(b[0], "it"),
-  );
 
   return (
     <ScrollView
@@ -88,9 +70,7 @@ export function ContinentFilms({ region, onBack }: Props) {
       <Text style={[styles.eyebrow, { color: colors.primary }]}>
         TUTTI I FILM
       </Text>
-      <Text style={[styles.title, { color: colors.foreground }]}>
-        {GROUP_META[region]?.flag ?? "🌍"} {region}
-      </Text>
+      <Text style={[styles.title, { color: colors.foreground }]}>{region}</Text>
       <Text style={[styles.count, { color: colors.primary }]}>
         {totalFilms} film in {countries.length} stato{countries.length !== 1 ? "i" : ""}
       </Text>
@@ -98,64 +78,16 @@ export function ContinentFilms({ region, onBack }: Props) {
         Tutti i film disponibili per gli stati di questa area.
       </Text>
 
-      {sortedGroups.map(([group, areas]) => (
-        <View key={group} style={styles.groupBlock}>
-          <Text style={[styles.groupTitle, { color: colors.foreground }]}>
-            {GROUP_META[group]?.flag ?? "🏳️"} {group}
+      {countries.map((country) => (
+        <View key={country.id} style={styles.countryBlock}>
+          <Text style={[styles.countryName, { color: colors.foreground }]}>
+            {country.flag} {country.name} ({country.films.length})
           </Text>
-          {areas.map((country) => (
-            <View key={country.id} style={styles.countryCard}>
-              <Pressable
-                testID={`continent-film-${country.id}`}
-                accessibilityRole="button"
-                accessibilityLabel={country.name}
-                onPress={() => {}}
-                style={styles.countryRow}
-              >
-                <Text style={styles.countryFlag}>{country.flag}</Text>
-                <Text style={[styles.countryName, { color: colors.foreground }]}>
-                  {country.name}
-                </Text>
-              </Pressable>
-              <View style={styles.filmsList}>
-                {country.films.map((film) => (
-                  <Text
-                    key={film.title + film.year}
-                    style={styles.filmRow}
-                  >
-                    {film.title} ({film.year})
-                  </Text>
-                ))}
-              </View>
-            </View>
-          ))}
-        </View>
-      ))}
-
-      {singles.map((country) => (
-        <View key={country.id} style={styles.countryCard}>
-          <Pressable
-            testID={`continent-film-${country.id}`}
-            accessibilityRole="button"
-            accessibilityLabel={country.name}
-            onPress={() => {}}
-            style={styles.countryRow}
-          >
-            <Text style={styles.countryFlag}>{country.flag}</Text>
-            <Text style={[styles.countryName, { color: colors.foreground }]}>
-              {country.name}
+          {country.films.map((film) => (
+            <Text key={film.title + film.year} style={styles.filmRow}>
+              {film.title} ({film.year})
             </Text>
-          </Pressable>
-          <View style={styles.filmsList}>
-            {country.films.map((film) => (
-              <Text
-                key={film.title + film.year}
-                style={styles.filmRow}
-              >
-                {film.title} ({film.year})
-              </Text>
-            ))}
-          </View>
+          ))}
         </View>
       ))}
     </ScrollView>
@@ -204,28 +136,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingTop: 80,
   },
-  groupBlock: { gap: 8 },
-  groupTitle: {
-    fontSize: 17,
-    fontFamily: "Inter_700Bold",
-    marginBottom: 4,
-  },
-  countryCard: { gap: 4 },
-  countryRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingVertical: 6,
-  },
-  countryFlag: { fontSize: 20 },
+  countryBlock: { gap: 6, marginBottom: 12 },
   countryName: {
-    fontSize: 15,
-    fontFamily: "Inter_600SemiBold",
+    fontSize: 16,
+    fontFamily: "Inter_700Bold",
   },
-  filmsList: { gap: 2 },
   filmRow: {
     fontSize: 13,
     fontFamily: "Inter_400Regular",
-    paddingLeft: 36,
+    paddingLeft: 24,
   },
 });
