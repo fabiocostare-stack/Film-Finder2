@@ -62,7 +62,7 @@ export function ContinentFilms({ region, onBack }: Props) {
         style={styles.backButton}
       >
         <Feather name="arrow-left" size={18} color={colors.foreground} />
-        <Text style={[styles.backText, { color: colors.foreground }]}>
+        <Text style={[styles.backText, { color: colors.primary }]}>
           Indietro
         </Text>
       </Pressable>
@@ -70,21 +70,21 @@ export function ContinentFilms({ region, onBack }: Props) {
       <Text style={[styles.eyebrow, { color: colors.primary }]}>
         TUTTI I FILM
       </Text>
-      <Text style={[styles.title, { color: colors.foreground }]}>{region}</Text>
+      <Text style={[styles.title, { color: colors.primary }]}>{region}</Text>
       <Text style={[styles.count, { color: colors.primary }]}>
-        {totalFilms} film in {countries.length} stato{countries.length !== 1 ? "i" : ""}
-      </Text>
-      <Text style={[styles.description, { color: colors.mutedForeground }]}>
-        Tutti i film disponibili per gli stati di questa area.
+        {totalFilms} film in {countries.length} stati
       </Text>
 
       {countries.map((country) => (
         <View key={country.id} style={styles.countryBlock}>
-          <Text style={[styles.countryName, { color: colors.foreground }]}>
+          <Text style={[styles.countryName, { color: colors.primary }]}>
             {country.flag} {country.name} ({country.films.length})
           </Text>
           {country.films.map((film) => (
-            <Text key={film.title + film.year} style={styles.filmRow}>
+            <Text
+              key={film.title + film.year}
+              style={[styles.filmRow, { color: colors.primary }]}
+            >
               {film.title} ({film.year})
             </Text>
           ))}
@@ -142,8 +142,8 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_700Bold",
   },
   filmRow: {
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
     paddingLeft: 24,
   },
 });
