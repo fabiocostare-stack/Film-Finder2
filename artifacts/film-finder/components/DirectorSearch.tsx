@@ -111,14 +111,7 @@ export function DirectorSearch({ onSelect }: DirectorSearchProps) {
         ) : null}
       </View>
 
-      {showHint ? (
-        <View style={[styles.hint, { borderColor: colors.border }]}>
-          <Feather name="users" size={20} color={colors.primary} />
-          <Text style={[styles.hintText, { color: colors.mutedForeground }]}>
-            Scrivi almeno due lettere: ti suggeriamo i registi mentre digiti.
-          </Text>
-        </View>
-      ) : search.isError ? (
+      {showHint ? null : search.isError ? (
         <View style={[styles.hint, { borderColor: colors.border }]}>
           <Feather name="alert-circle" size={20} color={colors.destructive} />
           <Text style={[styles.hintText, { color: colors.mutedForeground }]}>

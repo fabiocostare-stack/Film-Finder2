@@ -416,7 +416,7 @@ export default function HomeScreen() {
             TITOLI
           </Text>
           <Text style={[styles.pageTitle, { color: colors.foreground }]}>
-            Stasera,{"\n"}qualcosa di nuovo.
+            Cosa guardiamo?
           </Text>
         </View>
         <View style={styles.toplineActions}>
@@ -441,15 +441,14 @@ export default function HomeScreen() {
             IL TUO PROSSIMO FILM
           </Text>
           <Text style={[styles.featureTitle, { color: colors.foreground }]}>
-            Meno scroll.{"\n"}Più cinema.
+            Meno scroll. Più cinema.
           </Text>
           <Text style={[styles.featureBody, { color: colors.mutedForeground }]}>
-            Solo sui servizi che hai. Prima i film più apprezzati e vicini a ciò
-            che hai visto.
+            Solo sui servizi che hai, scelti sui tuoi gusti.
           </Text>
         </View>
         <View style={[styles.reelMark, { backgroundColor: colors.primary }]}>
-          <Feather name="film" size={25} color={colors.primaryForeground} />
+          <Feather name="film" size={18} color={colors.primaryForeground} />
         </View>
       </LinearGradient>
 
@@ -940,7 +939,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  content: { paddingHorizontal: 20, gap: 24 },
+  content: { paddingHorizontal: 20, gap: 16 },
   topline: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -951,10 +950,10 @@ const styles = StyleSheet.create({
   toplineActions: { alignItems: "flex-end", gap: 8 },
   eyebrow: { fontSize: 11, fontFamily: "Inter_700Bold", letterSpacing: 2.5 },
   pageTitle: {
-    marginTop: 10,
-    fontSize: 34,
-    lineHeight: 39,
-    letterSpacing: -1.2,
+    marginTop: 6,
+    fontSize: 26,
+    lineHeight: 31,
+    letterSpacing: -0.8,
     fontFamily: "Inter_700Bold",
   },
   regionBadge: {
@@ -969,32 +968,32 @@ const styles = StyleSheet.create({
   },
   regionText: { fontSize: 9, fontFamily: "Inter_700Bold", letterSpacing: 0.8 },
   feature: {
-    minHeight: 168,
-    borderRadius: 24,
-    padding: 20,
+    borderRadius: 18,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
     overflow: "hidden",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  featureCopy: { flex: 1, paddingRight: 6 },
+  featureCopy: { flex: 1, paddingRight: 8 },
   featureLabel: {
-    fontSize: 10,
+    fontSize: 9,
     fontFamily: "Inter_700Bold",
-    letterSpacing: 1.5,
+    letterSpacing: 1.4,
   },
   featureTitle: {
-    marginTop: 9,
-    fontSize: 24,
-    lineHeight: 28,
-    letterSpacing: -0.5,
+    marginTop: 3,
+    fontSize: 16,
+    lineHeight: 20,
+    letterSpacing: -0.3,
     fontFamily: "Inter_700Bold",
   },
-  featureBody: { marginTop: 9, maxWidth: 250, fontSize: 13, lineHeight: 19 },
+  featureBody: { marginTop: 3, fontSize: 11.5, lineHeight: 16 },
   reelMark: {
-    width: 54,
-    height: 54,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
     transform: [{ rotate: "-8deg" }],
