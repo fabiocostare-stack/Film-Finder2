@@ -419,15 +419,7 @@ export default function HomeScreen() {
             Cosa guardiamo?
           </Text>
         </View>
-        <View style={styles.toplineActions}>
-          <View style={[styles.regionBadge, { borderColor: colors.border }]}>
-            <Feather name="map-pin" size={13} color={colors.mutedForeground} />
-            <Text style={[styles.regionText, { color: colors.mutedForeground }]}>
-              ITALIA
-            </Text>
-          </View>
-          <ProfileShortcut />
-        </View>
+        <ProfileShortcut />
       </View>
 
       <LinearGradient

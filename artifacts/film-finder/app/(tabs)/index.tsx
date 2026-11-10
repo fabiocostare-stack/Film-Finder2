@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { DirectorProfile } from "@workspace/api-client-react";
 import { DirectorDetail } from "@/components/DirectorDetail";
@@ -40,15 +39,7 @@ export default function DirectorsScreen() {
             Il cinema,{"\n"}dai registi.
           </Text>
         </View>
-        <View style={styles.toplineActions}>
-          <View style={[styles.regionBadge, { borderColor: colors.border }]}>
-            <Feather name="map-pin" size={13} color={colors.mutedForeground} />
-            <Text style={[styles.regionText, { color: colors.mutedForeground }]}>
-              ITALIA
-            </Text>
-          </View>
-          <ProfileShortcut />
-        </View>
+        <ProfileShortcut />
       </View>
 
       <Text style={[styles.description, { color: colors.mutedForeground }]}>
